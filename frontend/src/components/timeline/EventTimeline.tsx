@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMessages } from "../../hooks/useApi";
+import { useWebSocket } from "../../hooks/useWebSocket";
 import type { EventType } from "../../types/timeline";
 import {
 	convertToTimelineEvents,
@@ -14,8 +15,15 @@ interface EventTimelineProps {
 
 export function EventTimeline({ conversationId }: EventTimelineProps) {
 	const { data: messages, isLoading, error } = useMessages(conversationId);
-	const [filters, setFilters] = useState<EventType[]>([]);
+	const [hiddenTypes, setHiddenTypes] = useState<EventType[]>([]);
+	const [showScrollButton, setShowScrollButton] = useState(false);
 	const scrollRef = useRef<HTMLDivElement>(null);
+	const prevEventCountRef = useRef(0);
+
+	// WebSocket for real-time updates
+	const { isConnected } = useWebSocket({
+		projectId: "all",
+	});
 
 	// メッセージをタイムラインイベントに変換
 	const events = useMemo(() => {
@@ -26,18 +34,44 @@ export function EventTimeline({ conversationId }: EventTimelineProps) {
 	// イベントタイプ別のカウント
 	const eventCounts = useMemo(() => countEventTypes(events), [events]);
 
-	// フィルタリング
+	// フィルタリング（hiddenTypesに含まれるタイプを非表示）
 	const filteredEvents = useMemo(() => {
-		if (filters.length === 0) return events;
-		return events.filter((e) => filters.includes(e.type));
-	}, [events, filters]);
+		if (hiddenTypes.length === 0) return events;
+		return events.filter((e) => !hiddenTypes.includes(e.type));
+	}, [events, hiddenTypes]);
 
-	// 新しいイベントが追加されたら自動スクロール
-	useEffect(() => {
+	// 最新メッセージへスクロール
+	const scrollToLatest = useCallback(() => {
 		if (scrollRef.current) {
-			scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+			scrollRef.current.scrollTo({
+				top: scrollRef.current.scrollHeight,
+				behavior: "smooth",
+			});
 		}
 	}, []);
+
+	// スクロール位置を監視してボタン表示を制御
+	const handleScroll = useCallback(() => {
+		if (scrollRef.current) {
+			const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+			// 下から100px以上離れていたらボタンを表示
+			const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+			setShowScrollButton(!isNearBottom);
+		}
+	}, []);
+
+	// 新しいイベントが追加されたら自動スクロール（下部にいる場合のみ）
+	useEffect(() => {
+		if (scrollRef.current && events.length > prevEventCountRef.current) {
+			const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+			const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+			// 下部にいる場合のみ自動スクロール
+			if (isNearBottom) {
+				scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+			}
+		}
+		prevEventCountRef.current = events.length;
+	}, [events.length]);
 
 	if (!conversationId) {
 		return (
@@ -81,16 +115,21 @@ export function EventTimeline({ conversationId }: EventTimelineProps) {
 	}
 
 	return (
-		<div className="h-full flex flex-col bg-white dark:bg-gray-900">
+		<div className="h-full flex flex-col bg-white dark:bg-gray-900 relative">
 			{/* ヘッダー（フィルタ） */}
 			<TimelineHeader
 				eventCounts={eventCounts}
-				filters={filters}
-				onFilterChange={setFilters}
+				hiddenTypes={hiddenTypes}
+				onHiddenTypesChange={setHiddenTypes}
+				isLive={isConnected}
 			/>
 
 			{/* タイムラインコンテンツ */}
-			<div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4">
+			<div
+				ref={scrollRef}
+				onScroll={handleScroll}
+				className="flex-1 overflow-y-auto px-4 py-4"
+			>
 				{/* タイムライン縦線 */}
 				<div className="relative pl-8">
 					<div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700" />
@@ -110,6 +149,30 @@ export function EventTimeline({ conversationId }: EventTimelineProps) {
 					</div>
 				</div>
 			</div>
+
+			{/* 最新へジャンプボタン */}
+			{showScrollButton && (
+				<button
+					type="button"
+					onClick={scrollToLatest}
+					className="absolute bottom-6 right-6 flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg transition-all hover:scale-105"
+				>
+					<svg
+						className="w-4 h-4"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+					>
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							strokeWidth={2}
+							d="M19 14l-7 7m0 0l-7-7m7 7V3"
+						/>
+					</svg>
+					<span className="text-sm font-medium">Latest</span>
+				</button>
+			)}
 		</div>
 	);
 }

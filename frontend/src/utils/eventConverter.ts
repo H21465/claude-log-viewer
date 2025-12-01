@@ -39,6 +39,7 @@ export function convertToTimelineEvents(messages: Message[]): TimelineEvent[] {
 								content: block.text,
 								toolUseId: block.tool_use_id,
 								toolName: toolName,
+								agentId: extractAgentIdFromResult(block.text),
 							});
 						} else {
 							events.push({
@@ -130,6 +131,7 @@ export function convertToTimelineEvents(messages: Message[]): TimelineEvent[] {
 					timestamp: message.timestamp,
 					messageId: message.id,
 					content: message.content,
+					model: message.model || undefined,
 				});
 			}
 		}
@@ -168,6 +170,7 @@ function convertContentBlockToEvent(
 				id: `${message.id}-text-${blockIndex}`,
 				type: "AGENT_RESPONSE",
 				content: block.text || "",
+				model: message.model || undefined,
 			};
 
 		case "tool_use": {
@@ -197,12 +200,31 @@ function convertContentBlockToEvent(
 				content: block.text,
 				toolUseId: prevToolUse?.tool_use_id,
 				toolName: prevToolUse?.tool_name,
+				agentId: isTaskResult ? extractAgentIdFromResult(block.text) : undefined,
 			};
 		}
 
 		default:
 			return null;
 	}
+}
+
+/**
+ * AGENT_RESULT (Task tool result) からagentIdを抽出
+ */
+function extractAgentIdFromResult(content: string | undefined): string | undefined {
+	if (!content) return undefined;
+	try {
+		// JSON形式の場合
+		const parsed = JSON.parse(content);
+		if (parsed.agentId) return parsed.agentId;
+	} catch {
+		// JSONでない場合、パターンマッチを試す
+		// "agentId": "8d19d637" のようなパターン
+		const match = content.match(/["']?agentId["']?\s*[:=]\s*["']([a-f0-9-]+)["']/i);
+		if (match) return match[1];
+	}
+	return undefined;
 }
 
 /**

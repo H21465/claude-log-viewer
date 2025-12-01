@@ -4,9 +4,20 @@ Parses JSONL log files from Claude CLI and extracts conversation data.
 """
 
 import json
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+
+
+def get_claude_logs_dir() -> Path:
+    """Get the Claude logs directory.
+
+    Returns:
+        Path to ~/.claude directory
+
+    """
+    return Path.home() / ".claude"
 
 
 @dataclass

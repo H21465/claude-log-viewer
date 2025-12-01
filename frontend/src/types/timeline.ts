@@ -31,6 +31,7 @@ export interface TimelineEvent {
 	agentType?: string;
 	agentId?: string;
 	agentStatus?: "running" | "completed" | "error";
+	model?: string;
 
 	// Nested events (for AGENT_SPAWN)
 	nestedEvents?: TimelineEvent[];
