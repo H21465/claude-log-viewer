@@ -2,15 +2,14 @@
 
 import asyncio
 import json
-import os
-import threading
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
-from watchdog.events import FileSystemEventHandler, FileModifiedEvent
+from watchdog.events import FileModifiedEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
-from services.log_parser import get_claude_logs_dir, get_project_hash
+from services.log_parser import get_claude_logs_dir
 
 
 class LogFileHandler(FileSystemEventHandler):
@@ -56,7 +55,7 @@ class LogFileHandler(FileSystemEventHandler):
         self._debounce_tasks[path] = self.loop.call_later(
             self._debounce_delay,
             lambda p=path: asyncio.run_coroutine_threadsafe(
-                self._process_file_change(p), self.loop
+                self._process_file_change(p), self.loop,
             ),
         )
 
@@ -88,20 +87,20 @@ class LogFileHandler(FileSystemEventHandler):
             # Read new lines from file
             new_messages = self._read_new_lines(file_path)
             if not new_messages:
-                print(f"  No new messages")
+                print("  No new messages")
                 return
 
             print(f"  New messages: {len(new_messages)}")
 
             # Call the callback
-            print(f"  Calling on_change callback...")
+            print("  Calling on_change callback...")
             self.on_change(project_path, session_id, {
                 "type": "new_messages",
                 "project_path": project_path,
                 "session_id": session_id,
                 "messages": new_messages,
             })
-            print(f"  Callback completed")
+            print("  Callback completed")
 
         except Exception as e:
             print(f"Error processing file change: {e}")
@@ -181,7 +180,7 @@ class FileWatcher:
         self._running = False
 
     def add_callback(
-        self, callback: Callable[[str, str, dict[str, Any]], None]
+        self, callback: Callable[[str, str, dict[str, Any]], None],
     ) -> None:
         """Add a callback for file changes.
 

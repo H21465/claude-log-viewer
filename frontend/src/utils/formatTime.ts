@@ -4,7 +4,11 @@
  */
 function parseTimestamp(timestamp: string): Date {
 	// タイムゾーン情報がない場合はUTCとして扱う
-	if (!timestamp.endsWith("Z") && !timestamp.includes("+") && !timestamp.includes("-", 10)) {
+	if (
+		!timestamp.endsWith("Z") &&
+		!timestamp.includes("+") &&
+		!timestamp.includes("-", 10)
+	) {
 		return new Date(timestamp + "Z");
 	}
 	return new Date(timestamp);

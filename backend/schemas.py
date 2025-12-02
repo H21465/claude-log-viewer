@@ -1,6 +1,6 @@
 """Pydantic schemas for API request/response validation."""
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -116,3 +116,80 @@ class SearchResult(BaseModel):
         """Pydantic configuration."""
 
         from_attributes = True
+
+
+class UsageEntryResponse(BaseModel):
+    """Schema for usage entry response."""
+
+    id: int
+    project_id: int
+    message_id: int | None
+    timestamp: datetime
+    model: str | None
+    input_tokens: int
+    output_tokens: int
+    cache_creation_tokens: int
+    cache_read_tokens: int
+    cost_usd: float
+
+    class Config:
+        """Pydantic configuration."""
+
+        from_attributes = True
+
+
+class DailyUsageResponse(BaseModel):
+    """Schema for daily usage response."""
+
+    id: int
+    project_id: int
+    date: date
+    model: str | None
+    input_tokens: int
+    output_tokens: int
+    cache_creation_tokens: int
+    cache_read_tokens: int
+    cost_usd: float
+    message_count: int
+
+    class Config:
+        """Pydantic configuration."""
+
+        from_attributes = True
+
+
+class MonthlyUsageResponse(BaseModel):
+    """Schema for monthly usage response."""
+
+    id: int
+    project_id: int
+    year: int
+    month: int
+    model: str | None
+    input_tokens: int
+    output_tokens: int
+    cache_creation_tokens: int
+    cache_read_tokens: int
+    cost_usd: float
+    message_count: int
+
+    class Config:
+        """Pydantic configuration."""
+
+        from_attributes = True
+
+
+class SessionBlockSchema(BaseModel):
+    """Schema for session block (runtime aggregation)."""
+
+    session_id: str
+    started_at: datetime
+    ended_at: datetime | None
+    duration_minutes: float
+    model: str | None
+    input_tokens: int
+    output_tokens: int
+    cache_creation_tokens: int
+    cache_read_tokens: int
+    cost_usd: float
+    message_count: int

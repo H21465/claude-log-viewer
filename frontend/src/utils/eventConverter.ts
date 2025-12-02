@@ -200,7 +200,9 @@ function convertContentBlockToEvent(
 				content: block.text,
 				toolUseId: prevToolUse?.tool_use_id,
 				toolName: prevToolUse?.tool_name,
-				agentId: isTaskResult ? extractAgentIdFromResult(block.text) : undefined,
+				agentId: isTaskResult
+					? extractAgentIdFromResult(block.text)
+					: undefined,
 			};
 		}
 
@@ -212,7 +214,9 @@ function convertContentBlockToEvent(
 /**
  * AGENT_RESULT (Task tool result) からagentIdを抽出
  */
-function extractAgentIdFromResult(content: string | undefined): string | undefined {
+function extractAgentIdFromResult(
+	content: string | undefined,
+): string | undefined {
 	if (!content) return undefined;
 	try {
 		// JSON形式の場合
@@ -221,7 +225,9 @@ function extractAgentIdFromResult(content: string | undefined): string | undefin
 	} catch {
 		// JSONでない場合、パターンマッチを試す
 		// "agentId": "8d19d637" のようなパターン
-		const match = content.match(/["']?agentId["']?\s*[:=]\s*["']([a-f0-9-]+)["']/i);
+		const match = content.match(
+			/["']?agentId["']?\s*[:=]\s*["']([a-f0-9-]+)["']/i,
+		);
 		if (match) return match[1];
 	}
 	return undefined;

@@ -22,11 +22,13 @@ async def websocket_endpoint(websocket: WebSocket, project_id: str) -> None:
     await manager.connect(websocket, project_id)
     try:
         # Send initial connection confirmation
-        await websocket.send_json({
-            "type": "connected",
-            "project_id": project_id,
-            "message": "Connected to real-time updates",
-        })
+        await websocket.send_json(
+            {
+                "type": "connected",
+                "project_id": project_id,
+                "message": "Connected to real-time updates",
+            },
+        )
 
         # Keep connection alive and listen for client messages
         while True:
@@ -41,16 +43,16 @@ async def websocket_endpoint(websocket: WebSocket, project_id: str) -> None:
                 if data.get("type") == "ping":
                     await websocket.send_json({"type": "pong"})
 
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 # Send keepalive ping
                 try:
                     await websocket.send_json({"type": "ping"})
-                except Exception:
+                except Exception:  # noqa: BLE001
                     break
 
     except WebSocketDisconnect:
         pass
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"WebSocket error: {e}")
     finally:
         await manager.disconnect(websocket, project_id)
@@ -72,9 +74,31 @@ async def broadcast_message_update(
     # Broadcast to specific project subscribers
     # Note: We use project_path as the key, but clients may subscribe with project_id
     # For now, broadcast to "all" subscribers
-    await manager.broadcast_all({
-        "type": "message_update",
-        "project_path": project_path,
-        "session_id": session_id,
-        "data": data,
-    })
+    await manager.broadcast_all(
+        {
+            "type": "message_update",
+            "project_path": project_path,
+            "session_id": session_id,
+            "data": data,
+        },
+    )
+
+
+async def broadcast_usage_update(
+    project_path: str,
+    usage_summary: dict[str, Any],
+) -> None:
+    """Broadcast a usage update to connected clients.
+
+    Args:
+        project_path: Path to the project
+        usage_summary: Usage summary data including tokens and costs
+
+    """
+    await manager.broadcast_all(
+        {
+            "type": "usage_update",
+            "project_path": project_path,
+            "data": usage_summary,
+        },
+    )

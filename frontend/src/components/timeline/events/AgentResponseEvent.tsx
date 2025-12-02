@@ -20,7 +20,9 @@ function formatModelName(model: string | undefined): string {
 		return `Opus${version ? ` ${version}` : ""}`;
 	}
 	if (model.includes("sonnet")) {
-		const match = model.match(/claude-(\d+)-(\d+)?-?sonnet|claude-sonnet-(\d+)/);
+		const match = model.match(
+			/claude-(\d+)-(\d+)?-?sonnet|claude-sonnet-(\d+)/,
+		);
 		if (match?.[3]) return `Sonnet ${match[3]}`;
 		if (match?.[1] && match?.[2]) return `Sonnet ${match[1]}.${match[2]}`;
 		if (match?.[1]) return `Sonnet ${match[1]}`;

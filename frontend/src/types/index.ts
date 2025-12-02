@@ -140,3 +140,13 @@ export interface AppState {
 	setSearchQuery: (query: string) => void;
 	toggleDarkMode: () => void;
 }
+
+// Re-export usage types
+export type {
+	DailyUsage,
+	ModelUsage,
+	SessionUsage,
+	UsageFilters,
+	UsageStats,
+	UsageSummary,
+} from "./usage";

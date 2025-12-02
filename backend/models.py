@@ -1,8 +1,18 @@
 """SQLAlchemy models for Claude log data."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.orm import relationship
 
 from database import Base
@@ -16,11 +26,11 @@ class Project(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     path = Column(String, unique=True, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
     updated_at = Column(
         DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
         nullable=False,
     )
 
@@ -42,8 +52,8 @@ class Conversation(Base):
     started_at = Column(DateTime, nullable=False)
     updated_at = Column(
         DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
         nullable=False,
     )
     message_count = Column(Integer, default=0, nullable=False)
@@ -75,3 +85,67 @@ class Message(Base):
     has_thinking = Column(Boolean, default=False)
 
     conversation = relationship("Conversation", back_populates="messages")
+    usage_entries = relationship(
+        "UsageEntry",
+        back_populates="message",
+        cascade="all, delete-orphan",
+    )
+
+
+class UsageEntry(Base):
+    """Usage entry model for tracking token usage per message."""
+
+    __tablename__ = "usage_entries"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
+    message_id = Column(Integer, ForeignKey("messages.id"), nullable=True)
+    timestamp = Column(DateTime, nullable=False, index=True)
+    model = Column(String, nullable=True)
+    input_tokens = Column(Integer, default=0, nullable=False)
+    output_tokens = Column(Integer, default=0, nullable=False)
+    cache_creation_tokens = Column(Integer, default=0, nullable=False)
+    cache_read_tokens = Column(Integer, default=0, nullable=False)
+    cost_usd = Column(Float, default=0.0, nullable=False)
+
+    project = relationship("Project")
+    message = relationship("Message", back_populates="usage_entries")
+
+
+class DailyUsage(Base):
+    """Daily usage aggregation model."""
+
+    __tablename__ = "daily_usage"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
+    date = Column(Date, nullable=False, index=True)
+    model = Column(String, nullable=True)
+    input_tokens = Column(Integer, default=0, nullable=False)
+    output_tokens = Column(Integer, default=0, nullable=False)
+    cache_creation_tokens = Column(Integer, default=0, nullable=False)
+    cache_read_tokens = Column(Integer, default=0, nullable=False)
+    cost_usd = Column(Float, default=0.0, nullable=False)
+    message_count = Column(Integer, default=0, nullable=False)
+
+    project = relationship("Project")
+
+
+class MonthlyUsage(Base):
+    """Monthly usage aggregation model."""
+
+    __tablename__ = "monthly_usage"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
+    year = Column(Integer, nullable=False, index=True)
+    month = Column(Integer, nullable=False, index=True)
+    model = Column(String, nullable=True)
+    input_tokens = Column(Integer, default=0, nullable=False)
+    output_tokens = Column(Integer, default=0, nullable=False)
+    cache_creation_tokens = Column(Integer, default=0, nullable=False)
+    cache_read_tokens = Column(Integer, default=0, nullable=False)
+    cost_usd = Column(Float, default=0.0, nullable=False)
+    message_count = Column(Integer, default=0, nullable=False)
+
+    project = relationship("Project")

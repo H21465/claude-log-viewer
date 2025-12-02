@@ -80,8 +80,7 @@ export function TimelineHeader({
 								: "Thinking: 折りたたみ表示"
 						}
 					>
-						💭
-						{expandThinkingByDefault ? "展開" : "折りたたみ"}
+						💭{expandThinkingByDefault ? "展開" : "折りたたみ"}
 					</button>
 				</div>
 				<span className="text-sm text-gray-500">

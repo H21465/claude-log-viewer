@@ -13,6 +13,8 @@ interface AppState {
 	expandThinkingByDefault: boolean;
 	// ヘッダー折りたたみ状態
 	headerCollapsed: boolean;
+	// 現在のタブ
+	currentTab: "timeline" | "usage";
 	setSelectedProjectId: (id: number | null) => void;
 	setSelectedProject: (project: Project | null) => void;
 	setSelectedConversationId: (id: number | null) => void;
@@ -22,6 +24,7 @@ interface AppState {
 	closeOverlay: () => void;
 	toggleExpandThinkingByDefault: () => void;
 	toggleHeaderCollapsed: () => void;
+	setCurrentTab: (tab: "timeline" | "usage") => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -33,6 +36,7 @@ export const useAppStore = create<AppState>((set) => ({
 	overlayPanel: "none",
 	expandThinkingByDefault: true, // デフォルトで展開
 	headerCollapsed: false,
+	currentTab: "timeline",
 
 	setSelectedProjectId: (id) => set({ selectedProjectId: id }),
 	setSelectedProject: (project) => set({ selectedProject: project }),
@@ -42,7 +46,10 @@ export const useAppStore = create<AppState>((set) => ({
 	setOverlayPanel: (panel) => set({ overlayPanel: panel }),
 	closeOverlay: () => set({ overlayPanel: "none" }),
 	toggleExpandThinkingByDefault: () =>
-		set((state) => ({ expandThinkingByDefault: !state.expandThinkingByDefault })),
+		set((state) => ({
+			expandThinkingByDefault: !state.expandThinkingByDefault,
+		})),
 	toggleHeaderCollapsed: () =>
 		set((state) => ({ headerCollapsed: !state.headerCollapsed })),
+	setCurrentTab: (tab) => set({ currentTab: tab }),
 }));

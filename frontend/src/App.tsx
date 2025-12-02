@@ -3,6 +3,7 @@ import { ConversationList } from "./components/ConversationList";
 import { ProjectList } from "./components/ProjectList";
 import { SearchBar } from "./components/SearchBar";
 import { EventTimeline } from "./components/timeline";
+import { UsageDashboard } from "./components/usage";
 import { useAppStore } from "./store";
 
 const queryClient = new QueryClient();
@@ -87,48 +88,79 @@ function NavigationBar() {
 		setOverlayPanel,
 		selectedProject,
 		selectedConversationId,
+		currentTab,
+		setCurrentTab,
 	} = useAppStore();
 
 	return (
-		<div className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-			<button
-				type="button"
-				onClick={() =>
-					setOverlayPanel(overlayPanel === "projects" ? "none" : "projects")
-				}
-				className={`px-3 py-1.5 text-sm rounded-lg transition-colors flex items-center gap-2 ${
-					overlayPanel === "projects"
-						? "bg-orange-500 text-white"
-						: "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600"
-				}`}
-			>
-				<span>📁</span>
-				<span className="font-medium truncate max-w-32">
-					{selectedProject?.name || "Projects"}
-				</span>
-			</button>
-			<span className="text-gray-400">→</span>
-			<button
-				type="button"
-				onClick={() =>
-					setOverlayPanel(
-						overlayPanel === "conversations" ? "none" : "conversations",
-					)
-				}
-				className={`px-3 py-1.5 text-sm rounded-lg transition-colors flex items-center gap-2 ${
-					overlayPanel === "conversations"
-						? "bg-orange-500 text-white"
-						: "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600"
-				}`}
-				disabled={!selectedProject}
-			>
-				<span>💬</span>
-				<span className="font-medium truncate max-w-40">
-					{selectedConversationId
-						? `Session #${selectedConversationId}`
-						: "Conversations"}
-				</span>
-			</button>
+		<div className="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+			{/* Left side - Project and Conversation navigation */}
+			<div className="flex items-center gap-2">
+				<button
+					type="button"
+					onClick={() =>
+						setOverlayPanel(overlayPanel === "projects" ? "none" : "projects")
+					}
+					className={`px-3 py-1.5 text-sm rounded-lg transition-colors flex items-center gap-2 ${
+						overlayPanel === "projects"
+							? "bg-orange-500 text-white"
+							: "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600"
+					}`}
+				>
+					<span>📁</span>
+					<span className="font-medium truncate max-w-32">
+						{selectedProject?.name || "Projects"}
+					</span>
+				</button>
+				<span className="text-gray-400">→</span>
+				<button
+					type="button"
+					onClick={() =>
+						setOverlayPanel(
+							overlayPanel === "conversations" ? "none" : "conversations",
+						)
+					}
+					className={`px-3 py-1.5 text-sm rounded-lg transition-colors flex items-center gap-2 ${
+						overlayPanel === "conversations"
+							? "bg-orange-500 text-white"
+							: "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600"
+					}`}
+					disabled={!selectedProject}
+				>
+					<span>💬</span>
+					<span className="font-medium truncate max-w-40">
+						{selectedConversationId
+							? `Session #${selectedConversationId}`
+							: "Conversations"}
+					</span>
+				</button>
+			</div>
+
+			{/* Right side - Tab navigation */}
+			<div className="flex items-center gap-2">
+				<button
+					type="button"
+					onClick={() => setCurrentTab("timeline")}
+					className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+						currentTab === "timeline"
+							? "bg-orange-500 text-white"
+							: "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600"
+					}`}
+				>
+					Timeline
+				</button>
+				<button
+					type="button"
+					onClick={() => setCurrentTab("usage")}
+					className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+						currentTab === "usage"
+							? "bg-orange-500 text-white"
+							: "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600"
+					}`}
+				>
+					Usage
+				</button>
+			</div>
 		</div>
 	);
 }
@@ -173,7 +205,8 @@ function OverlayPanel() {
 }
 
 function AppContent() {
-	const { darkMode, selectedConversationId, headerCollapsed } = useAppStore();
+	const { darkMode, selectedConversationId, headerCollapsed, currentTab } =
+		useAppStore();
 
 	return (
 		<div className={darkMode ? "dark" : ""}>
@@ -185,10 +218,14 @@ function AppContent() {
 					}`}
 				>
 					<NavigationBar />
-					<SearchBar />
+					{currentTab === "timeline" && <SearchBar />}
 				</div>
 				<div className="flex-1 flex flex-col min-h-0 relative">
-					<EventTimeline conversationId={selectedConversationId} />
+					{currentTab === "timeline" ? (
+						<EventTimeline conversationId={selectedConversationId} />
+					) : (
+						<UsageDashboard />
+					)}
 					<OverlayPanel />
 				</div>
 			</div>

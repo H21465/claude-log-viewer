@@ -1,7 +1,7 @@
 import { useState } from "react";
+import { useAppStore } from "../../../store";
 import type { TimelineEvent } from "../../../types/timeline";
 import { EVENT_TYPE_META } from "../../../types/timeline";
-import { useAppStore } from "../../../store";
 import { EventNode } from "../EventNode";
 import { SubagentTimeline } from "../SubagentTimeline";
 
@@ -66,7 +66,8 @@ export function AgentResultEvent({ event }: AgentResultEventProps) {
 									: "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-800"
 							}`}
 						>
-							{showSubagent ? "Hide" : "Show"} Subagent Timeline ({event.agentId?.slice(0, 8)})
+							{showSubagent ? "Hide" : "Show"} Subagent Timeline (
+							{event.agentId?.slice(0, 8)})
 						</button>
 					)}
 					<div className="whitespace-pre-wrap break-words text-sm">

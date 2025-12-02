@@ -16,7 +16,10 @@ interface TimelineEventProps {
 	nested?: boolean;
 }
 
-export function TimelineEvent({ event, nested: _nested = false }: TimelineEventProps) {
+export function TimelineEvent({
+	event,
+	nested: _nested = false,
+}: TimelineEventProps) {
 	switch (event.type) {
 		case "USER_MESSAGE":
 			return <UserMessageEvent event={event} />;

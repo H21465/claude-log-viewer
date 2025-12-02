@@ -9,8 +9,15 @@ interface SubagentTimelineProps {
 	projectPath: string;
 }
 
-export function SubagentTimeline({ agentId, projectPath }: SubagentTimelineProps) {
-	const { data: subagentData, isLoading, error } = useSubagentMessages(agentId, projectPath);
+export function SubagentTimeline({
+	agentId,
+	projectPath,
+}: SubagentTimelineProps) {
+	const {
+		data: subagentData,
+		isLoading,
+		error,
+	} = useSubagentMessages(agentId, projectPath);
 
 	// サブエージェントのメッセージをタイムラインイベントに変換
 	const events = useMemo(() => {
@@ -63,10 +70,14 @@ export function SubagentTimeline({ agentId, projectPath }: SubagentTimelineProps
 				<div className="mb-3 flex items-center gap-4 text-xs text-gray-500">
 					<span>{subagentData.stats.message_count} messages</span>
 					{subagentData.stats.total_tokens && (
-						<span>{subagentData.stats.total_tokens.toLocaleString()} tokens</span>
+						<span>
+							{subagentData.stats.total_tokens.toLocaleString()} tokens
+						</span>
 					)}
 					{subagentData.stats.total_duration_ms && (
-						<span>{(subagentData.stats.total_duration_ms / 1000).toFixed(1)}s</span>
+						<span>
+							{(subagentData.stats.total_duration_ms / 1000).toFixed(1)}s
+						</span>
 					)}
 				</div>
 			)}
