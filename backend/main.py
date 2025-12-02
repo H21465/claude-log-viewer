@@ -13,6 +13,7 @@ from models import Project
 from routers import conversations, messages, projects, search, subagents, sync
 from routers.websocket import router as websocket_router, broadcast_message_update
 from services.file_watcher import file_watcher
+from services.log_parser import list_all_projects
 from services.sync_service import sync_project
 
 
@@ -62,11 +63,48 @@ def on_file_change(project_path: str, session_id: str, data: dict[str, Any]) -> 
         pass
 
 
+def scan_all_existing_projects() -> None:
+    """Scan and sync all existing projects on startup."""
+    print("Scanning existing projects...")
+
+    all_projects = list_all_projects()
+    print(f"Found {len(all_projects)} projects")
+
+    db = SessionLocal()
+    try:
+        for project_path, project_hash in all_projects:
+            print(f"  Syncing project: {project_path}")
+
+            # Get or create project
+            project = db.query(Project).filter(Project.path == project_path).first()
+            if not project:
+                project_name = Path(project_path).name or project_path
+                project = Project(name=project_name, path=project_path)
+                db.add(project)
+                db.flush()
+
+            # Sync project logs
+            try:
+                stats = sync_project(db, project.id)
+                print(f"    Synced: {stats}")
+            except Exception as e:
+                print(f"    Error syncing: {e}")
+
+        db.commit()
+    finally:
+        db.close()
+
+    print("Initial scan completed")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
     # Startup
     Base.metadata.create_all(bind=engine)
+
+    # Scan existing projects on startup
+    scan_all_existing_projects()
 
     # Start file watcher
     loop = asyncio.get_running_loop()
