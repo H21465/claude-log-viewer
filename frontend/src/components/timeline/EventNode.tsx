@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { formatTime } from "../../utils/formatTime";
 
 interface EventNodeProps {
 	icon: string;
@@ -91,19 +92,6 @@ const colorClasses: Record<
 		text: "text-violet-700 dark:text-violet-300",
 	},
 };
-
-function formatTime(timestamp: string): string {
-	try {
-		const date = new Date(timestamp);
-		return date.toLocaleTimeString("ja-JP", {
-			hour: "2-digit",
-			minute: "2-digit",
-			second: "2-digit",
-		});
-	} catch {
-		return "";
-	}
-}
 
 export function EventNode({
 	icon,

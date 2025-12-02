@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { ContentBlock, SubagentMessage } from "../../types";
+import { formatTime } from "../../utils/formatTime";
 
 interface SubagentTimelineProps {
 	messages: SubagentMessage[];
@@ -13,20 +14,6 @@ interface SubagentTimelineProps {
 		thinking_count: number;
 	};
 }
-
-// Format timestamp
-const formatTime = (timestamp: string): string => {
-	try {
-		const date = new Date(timestamp);
-		return date.toLocaleTimeString("ja-JP", {
-			hour: "2-digit",
-			minute: "2-digit",
-			second: "2-digit",
-		});
-	} catch {
-		return timestamp;
-	}
-};
 
 // Message block component
 interface MessageBlockProps {

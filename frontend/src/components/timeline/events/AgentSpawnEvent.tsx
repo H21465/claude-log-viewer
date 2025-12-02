@@ -19,6 +19,23 @@ const AGENT_ICONS: Record<string, string> = {
 	search: "🔍",
 	Explore: "🔭",
 	Plan: "📋",
+	"general-purpose": "🤖",
+	"claude-code-guide": "📚",
+};
+
+// Agent type descriptions
+const AGENT_DESCRIPTIONS: Record<string, string> = {
+	architect: "設計・判断・タスク分割",
+	implementer: "機能実装",
+	reviewer: "コードレビュー",
+	debugger: "デバッグ・エラー解析",
+	"doc-writer": "ドキュメント生成",
+	explore: "コードベース探索",
+	search: "Web検索・ドキュメント調査",
+	Explore: "コードベース探索",
+	Plan: "計画・設計",
+	"general-purpose": "汎用エージェント",
+	"claude-code-guide": "Claude Code ガイド",
 };
 
 export function AgentSpawnEvent({
@@ -29,7 +46,14 @@ export function AgentSpawnEvent({
 	const meta = EVENT_TYPE_META.AGENT_SPAWN;
 
 	const agentIcon = AGENT_ICONS[event.agentType || ""] || "🚀";
+	const agentDesc = AGENT_DESCRIPTIONS[event.agentType || ""] || "";
 	const hasNestedEvents = event.nestedEvents && event.nestedEvents.length > 0;
+
+	// Extract description from toolInput if available
+	const taskDescription = useMemo(() => {
+		const input = event.toolInput as Record<string, unknown> | undefined;
+		return input?.description as string | undefined;
+	}, [event.toolInput]);
 
 	// Prompt preview
 	const promptPreview = useMemo(() => {
@@ -48,7 +72,7 @@ export function AgentSpawnEvent({
 					<span>{event.agentType || "Agent"}</span>
 				</div>
 				<div className="text-xs text-gray-500 mt-1 line-clamp-2">
-					{promptPreview}
+					{taskDescription || promptPreview}
 				</div>
 			</div>
 		);
@@ -72,32 +96,42 @@ export function AgentSpawnEvent({
 						| "violet"
 				}
 				timestamp={event.timestamp}
-				label={event.agentType || "Agent Spawn"}
+				label="Subagent Started"
 				expandable={!!event.content || hasNestedEvents}
 				expanded={expanded}
 				onClick={() => setExpanded(!expanded)}
 			>
 				<div>
-					<div className="flex items-center gap-2 text-sm">
-						<span className="font-semibold">
+					{/* Agent type header with icon */}
+					<div className="flex items-center gap-2 mb-1">
+						<span className="text-lg">{agentIcon}</span>
+						<span className="font-semibold text-indigo-700 dark:text-indigo-300">
 							{event.agentType || "Unknown Agent"}
 						</span>
-						{event.agentStatus && (
-							<span
-								className={`px-1.5 py-0.5 rounded text-xs ${
-									event.agentStatus === "completed"
-										? "bg-green-200 text-green-800"
-										: event.agentStatus === "error"
-											? "bg-red-200 text-red-800"
-											: "bg-yellow-200 text-yellow-800"
-								}`}
-							>
-								{event.agentStatus}
-							</span>
-						)}
+						<span className="px-2 py-0.5 rounded-full text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 animate-pulse">
+							Running
+						</span>
 					</div>
 
-					{!expanded && promptPreview && (
+					{/* Agent role description */}
+					{agentDesc && (
+						<div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+							{agentDesc}
+						</div>
+					)}
+
+					{/* Task description (short summary) */}
+					{taskDescription && (
+						<div className="flex items-center gap-1 text-sm mt-1">
+							<span className="text-gray-400">📌</span>
+							<span className="font-medium text-gray-700 dark:text-gray-300">
+								{taskDescription}
+							</span>
+						</div>
+					)}
+
+					{/* Prompt preview (if no description) */}
+					{!expanded && !taskDescription && promptPreview && (
 						<div className="text-xs text-gray-500 mt-1 line-clamp-2">
 							{promptPreview}
 						</div>
@@ -114,7 +148,7 @@ export function AgentSpawnEvent({
 							<div className="text-xs font-medium text-indigo-600 dark:text-indigo-400 mb-1">
 								Prompt:
 							</div>
-							<div className="whitespace-pre-wrap break-words text-gray-700 dark:text-gray-300">
+							<div className="whitespace-pre-wrap break-words text-gray-700 dark:text-gray-300 text-xs">
 								{event.content}
 							</div>
 						</div>

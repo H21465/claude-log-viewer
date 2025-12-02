@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import type { EventType } from "../../types/timeline";
 import { EVENT_TYPE_META } from "../../types/timeline";
 
@@ -5,15 +6,28 @@ interface TimelineHeaderProps {
 	eventCounts: Record<EventType, number>;
 	hiddenTypes: EventType[];
 	onHiddenTypesChange: (hiddenTypes: EventType[]) => void;
-	isLive?: boolean;
+	lastEventTimestamp?: string;
+}
+
+// セッションがアクティブかどうか（5分以内に更新があったか）
+function isSessionActive(timestamp: string | undefined): boolean {
+	if (!timestamp) return false;
+	const lastUpdate = new Date(timestamp).getTime();
+	const now = Date.now();
+	const fiveMinutes = 5 * 60 * 1000;
+	return now - lastUpdate < fiveMinutes;
 }
 
 export function TimelineHeader({
 	eventCounts,
 	hiddenTypes,
 	onHiddenTypesChange,
-	isLive = false,
+	lastEventTimestamp,
 }: TimelineHeaderProps) {
+	const isActive = useMemo(
+		() => isSessionActive(lastEventTimestamp),
+		[lastEventTimestamp],
+	);
 	const toggleType = (type: EventType) => {
 		if (hiddenTypes.includes(type)) {
 			// 現在非表示 → 表示に
@@ -43,10 +57,10 @@ export function TimelineHeader({
 					<h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
 						Timeline
 					</h2>
-					{isLive && (
+					{isActive && (
 						<span className="flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">
 							<span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-							Live
+							Active
 						</span>
 					)}
 				</div>

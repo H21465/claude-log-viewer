@@ -18,10 +18,11 @@ export function EventTimeline({ conversationId }: EventTimelineProps) {
 	const [hiddenTypes, setHiddenTypes] = useState<EventType[]>([]);
 	const [showScrollButton, setShowScrollButton] = useState(false);
 	const scrollRef = useRef<HTMLDivElement>(null);
-	const prevEventCountRef = useRef(0);
+	const prevLastEventIdRef = useRef<string | null>(null);
+	const isNearBottomRef = useRef(true);
 
 	// WebSocket for real-time updates
-	const { isConnected } = useWebSocket({
+	useWebSocket({
 		projectId: "all",
 	});
 
@@ -30,6 +31,15 @@ export function EventTimeline({ conversationId }: EventTimelineProps) {
 		if (!messages) return [];
 		return convertToTimelineEvents(messages);
 	}, [messages]);
+
+	// 最後のイベントのIDとタイムスタンプを取得
+	const lastEvent = useMemo(() => {
+		if (events.length === 0) return null;
+		return events[events.length - 1];
+	}, [events]);
+
+	const lastEventId = lastEvent?.id ?? null;
+	const lastEventTimestamp = lastEvent?.timestamp;
 
 	// イベントタイプ別のカウント
 	const eventCounts = useMemo(() => countEventTypes(events), [events]);
@@ -56,22 +66,30 @@ export function EventTimeline({ conversationId }: EventTimelineProps) {
 			const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
 			// 下から100px以上離れていたらボタンを表示
 			const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+			isNearBottomRef.current = isNearBottom;
 			setShowScrollButton(!isNearBottom);
 		}
 	}, []);
 
 	// 新しいイベントが追加されたら自動スクロール（下部にいる場合のみ）
 	useEffect(() => {
-		if (scrollRef.current && events.length > prevEventCountRef.current) {
-			const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-			const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+		// 最後のイベントIDが変わった場合のみ処理
+		if (lastEventId && lastEventId !== prevLastEventIdRef.current) {
 			// 下部にいる場合のみ自動スクロール
-			if (isNearBottom) {
-				scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+			if (isNearBottomRef.current) {
+				// DOMが更新された後にスクロールするため、requestAnimationFrameを使用
+				requestAnimationFrame(() => {
+					if (scrollRef.current) {
+						scrollRef.current.scrollTo({
+							top: scrollRef.current.scrollHeight,
+							behavior: "smooth",
+						});
+					}
+				});
 			}
 		}
-		prevEventCountRef.current = events.length;
-	}, [events.length]);
+		prevLastEventIdRef.current = lastEventId;
+	}, [lastEventId]);
 
 	if (!conversationId) {
 		return (
@@ -121,7 +139,7 @@ export function EventTimeline({ conversationId }: EventTimelineProps) {
 				eventCounts={eventCounts}
 				hiddenTypes={hiddenTypes}
 				onHiddenTypesChange={setHiddenTypes}
-				isLive={isConnected}
+				lastEventTimestamp={lastEventTimestamp}
 			/>
 
 			{/* タイムラインコンテンツ */}

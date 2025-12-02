@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Message } from "../../types";
+import { formatTimeShort } from "../../utils/formatTime";
 
 interface UserBubbleProps {
 	message: Message;
@@ -7,10 +8,7 @@ interface UserBubbleProps {
 
 export const UserBubble = ({ message }: UserBubbleProps) => {
 	const [copied, setCopied] = useState(false);
-	const timestamp = new Date(message.timestamp).toLocaleTimeString([], {
-		hour: "2-digit",
-		minute: "2-digit",
-	});
+	const timestamp = formatTimeShort(message.timestamp);
 
 	const handleCopy = async () => {
 		await navigator.clipboard.writeText(message.content);

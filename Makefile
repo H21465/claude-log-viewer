@@ -1,17 +1,28 @@
-.PHONY: start stop help
+.PHONY: start stop help setup status
 
 # ヘルプ
 help:
 	@echo "Claude Log Viewer"
 	@echo ""
-	@echo "  make start  - Start the app"
+	@echo "  make start  - Start the app (auto-installs dependencies if needed)"
 	@echo "  make stop   - Stop the app"
+	@echo "  make status - Show running status"
+	@echo "  make setup  - Install all dependencies"
 	@echo "  make help   - Show this help"
 
+# 依存関係のインストール
+setup:
+	@echo "Setting up dependencies..."
+	@if [ ! -d frontend/node_modules ]; then \
+		echo "Installing npm packages..."; \
+		cd frontend && npm install; \
+	fi
+	@echo "Setup complete."
+
 # 起動
-start:
+start: setup
 	@echo "Starting Claude Log Viewer..."
-	@cd backend && ./venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000 & echo $$! > ../.backend.pid
+	@cd backend && uv run uvicorn main:app --host 0.0.0.0 --port 8000 & echo $$! > ../.backend.pid
 	@cd frontend && npm run dev & echo $$! > ../.frontend.pid
 	@echo ""
 	@echo "Backend:  http://localhost:8000"
@@ -32,3 +43,20 @@ stop:
 	@pkill -f "uvicorn main:app" 2>/dev/null || true
 	@pkill -f "vite" 2>/dev/null || true
 	@echo "Stopped."
+
+# ステータス確認
+status:
+	@echo "Claude Log Viewer Status"
+	@echo "========================"
+	@backend_running=$$(pgrep -f "uvicorn main:app" 2>/dev/null); \
+	if [ -n "$$backend_running" ]; then \
+		echo "Backend:  Running (PID: $$backend_running) - http://localhost:8000"; \
+	else \
+		echo "Backend:  Stopped"; \
+	fi
+	@frontend_running=$$(pgrep -f "vite" 2>/dev/null); \
+	if [ -n "$$frontend_running" ]; then \
+		echo "Frontend: Running (PID: $$frontend_running) - http://localhost:5173"; \
+	else \
+		echo "Frontend: Stopped"; \
+	fi

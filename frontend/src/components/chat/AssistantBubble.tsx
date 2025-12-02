@@ -6,6 +6,7 @@ import type {
 	ParallelTaskGroup as ParallelTaskGroupType,
 	ToolUseResult,
 } from "../../types";
+import { formatTimeShort } from "../../utils/formatTime";
 import { ParallelTaskGroup } from "./ParallelTaskGroup";
 import { TaskSubagent } from "./TaskSubagent";
 import { TextContent } from "./TextContent";
@@ -92,10 +93,7 @@ const shortenModelName = (model: string | null): string => {
 export const AssistantBubble = ({ message }: AssistantBubbleProps) => {
 	const [copied, setCopied] = useState(false);
 	const { selectedProject } = useAppStore();
-	const timestamp = new Date(message.timestamp).toLocaleTimeString([], {
-		hour: "2-digit",
-		minute: "2-digit",
-	});
+	const timestamp = formatTimeShort(message.timestamp);
 
 	const handleCopy = async () => {
 		const textToCopy = message.content_blocks

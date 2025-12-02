@@ -45,7 +45,7 @@ export const useSyncProject = () => {
 	});
 };
 
-// Conversations (5秒ごとに自動更新)
+// Conversations (WebSocketで更新通知を受信)
 export const useConversations = (projectId: number | null) => {
 	return useQuery({
 		queryKey: ["conversations", projectId],
@@ -57,11 +57,10 @@ export const useConversations = (projectId: number | null) => {
 			return data;
 		},
 		enabled: !!projectId,
-		refetchInterval: 5000,
 	});
 };
 
-// Messages (2秒ごとに自動更新)
+// Messages (WebSocketで更新通知を受信)
 export const useMessages = (conversationId: number | null) => {
 	return useQuery({
 		queryKey: ["messages", conversationId],
@@ -73,7 +72,6 @@ export const useMessages = (conversationId: number | null) => {
 			return data;
 		},
 		enabled: !!conversationId,
-		refetchInterval: 2000,
 	});
 };
 

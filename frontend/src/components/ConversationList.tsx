@@ -1,5 +1,6 @@
 import { useConversations } from "../hooks/useApi";
 import { useAppStore } from "../store";
+import { formatTimeShort } from "../utils/formatTime";
 
 interface ConversationListProps {
 	onSelect?: () => void;
@@ -123,18 +124,8 @@ export const ConversationList = ({ onSelect }: ConversationListProps) => {
 								{date}
 							</div>
 							{groupedConversations[date].map((conversation) => {
-								const startTime = new Date(
-									conversation.started_at,
-								).toLocaleTimeString([], {
-									hour: "2-digit",
-									minute: "2-digit",
-								});
-								const updateTime = new Date(
-									conversation.updated_at,
-								).toLocaleTimeString([], {
-									hour: "2-digit",
-									minute: "2-digit",
-								});
+								const startTime = formatTimeShort(conversation.started_at);
+								const updateTime = formatTimeShort(conversation.updated_at);
 
 								return (
 									<div
