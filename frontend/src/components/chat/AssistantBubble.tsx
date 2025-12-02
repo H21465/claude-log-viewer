@@ -5,13 +5,7 @@ import type {
 	ParallelTaskGroup as ParallelTaskGroupType,
 	ToolUseResult,
 } from "../../types";
-import {
-	formatAsJson,
-	formatAsMarkdown,
-	formatTextOnly,
-} from "../../utils/copyFormatters";
 import { formatTimeShort } from "../../utils/formatTime";
-import { CopyDropdown } from "./CopyDropdown";
 import { ParallelTaskGroup } from "./ParallelTaskGroup";
 import { TaskSubagent } from "./TaskSubagent";
 import { TextContent } from "./TextContent";
@@ -134,7 +128,7 @@ export const AssistantBubble = ({ message }: AssistantBubbleProps) => {
 	const modelName = shortenModelName(message.model);
 
 	return (
-		<div className="flex justify-start mb-3 group">
+		<div className="flex justify-start mb-3">
 			<div className="flex items-start gap-2 max-w-[85%]">
 				<div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
 					C
@@ -159,7 +153,7 @@ export const AssistantBubble = ({ message }: AssistantBubbleProps) => {
 								)}
 								{message.uuid && (
 									<span
-										className="text-xs text-gray-400 dark:text-gray-500 font-mono"
+										className="text-xs text-gray-400 dark:text-gray-500 font-mono select-text"
 										title={message.uuid}
 									>
 										{message.uuid.substring(0, 8)}
@@ -288,39 +282,9 @@ export const AssistantBubble = ({ message }: AssistantBubbleProps) => {
 						)}
 					</div>
 
-					{/* Timestamp and actions */}
+					{/* Timestamp */}
 					<div className="flex items-center gap-2 mt-1 ml-1 text-xs text-gray-500 dark:text-gray-400">
 						<span>{timestamp}</span>
-						<CopyDropdown
-							accentColor="orange"
-							options={[
-								{
-									label: "Copy Text",
-									icon: "📋",
-									action: async () => {
-										await navigator.clipboard.writeText(
-											formatTextOnly(message),
-										);
-									},
-								},
-								{
-									label: "Copy as Markdown",
-									icon: "📄",
-									action: async () => {
-										await navigator.clipboard.writeText(
-											formatAsMarkdown(message),
-										);
-									},
-								},
-								{
-									label: "Copy Full",
-									icon: "📦",
-									action: async () => {
-										await navigator.clipboard.writeText(formatAsJson(message));
-									},
-								},
-							]}
-						/>
 					</div>
 				</div>
 			</div>

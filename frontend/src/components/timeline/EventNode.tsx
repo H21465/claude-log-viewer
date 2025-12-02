@@ -105,13 +105,6 @@ export function EventNode({
 }: EventNodeProps) {
 	const colors = colorClasses[color] || colorClasses.gray;
 
-	const handleKeyDown = (e: React.KeyboardEvent) => {
-		if (onClick && (e.key === "Enter" || e.key === " ")) {
-			e.preventDefault();
-			onClick();
-		}
-	};
-
 	return (
 		<div className="relative flex items-start gap-3 mb-3 group">
 			{/* タイムラインドット */}
@@ -120,41 +113,35 @@ export function EventNode({
 			/>
 
 			{/* タイムスタンプ */}
-			<div className="text-xs text-gray-400 dark:text-gray-500 w-20 flex-shrink-0 pt-2.5 font-mono">
+			<div className="text-xs text-gray-400 dark:text-gray-500 w-20 flex-shrink-0 pt-2.5 font-mono select-text">
 				{formatTime(timestamp)}
 			</div>
 
 			{/* イベントカード */}
 			<div
-				className={`
-          flex-1 min-w-0 rounded-lg border ${colors.bg} ${colors.border}
-          ${onClick ? "cursor-pointer hover:shadow-md transition-shadow" : ""}
-          ${expandable ? "select-none" : ""}
-        `}
-				{...(onClick && {
-					onClick,
-					onKeyDown: handleKeyDown,
-					role: "button",
-					tabIndex: 0,
-				})}
+				className={`flex-1 min-w-0 rounded-lg border ${colors.bg} ${colors.border}`}
 			>
 				{/* ヘッダー */}
 				<div className={`flex items-center gap-2 px-3 py-2 ${colors.text}`}>
 					<span className="text-base flex-shrink-0">{icon}</span>
 					{label && (
-						<span className="text-xs font-medium uppercase tracking-wide opacity-75 truncate">
+						<span className="text-xs font-medium uppercase tracking-wide opacity-75 truncate select-text">
 							{label}
 						</span>
 					)}
-					{expandable && (
-						<span className="ml-auto text-gray-400 flex-shrink-0">
+					{expandable && onClick && (
+						<button
+							type="button"
+							onClick={onClick}
+							className="ml-auto text-gray-400 flex-shrink-0 px-2 py-1 rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+						>
 							{expanded ? "▼" : "▶"}
-						</span>
+						</button>
 					)}
 				</div>
 
 				{/* コンテンツ */}
-				<div className="px-3 pb-3 text-sm text-gray-700 dark:text-gray-300 overflow-hidden break-words">
+				<div className="px-3 pb-3 text-sm text-gray-700 dark:text-gray-300 overflow-hidden break-words select-text">
 					{children}
 				</div>
 			</div>

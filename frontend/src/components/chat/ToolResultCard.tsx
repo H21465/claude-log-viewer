@@ -12,13 +12,6 @@ export const ToolResultCard = ({
 	isError = false,
 }: ToolResultCardProps) => {
 	const [expanded, setExpanded] = useState(false);
-	const [copied, setCopied] = useState(false);
-
-	const handleCopy = async () => {
-		await navigator.clipboard.writeText(result);
-		setCopied(true);
-		setTimeout(() => setCopied(false), 2000);
-	};
 
 	// Count lines for display
 	const lineCount = result.split("\n").length;
@@ -49,7 +42,7 @@ export const ToolResultCard = ({
 						: "bg-gray-50 dark:bg-gray-800"
 				}`}
 			>
-				<div className="flex items-center gap-2">
+				<div className="flex items-center gap-2 select-text">
 					{isError ? (
 						<span className="w-5 h-5 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center">
 							<svg
@@ -88,24 +81,15 @@ export const ToolResultCard = ({
 						{lineCount} line{lineCount !== 1 ? "s" : ""}
 					</span>
 				</div>
-				<div className="flex items-center gap-2">
+				{isLongResult && (
 					<button
 						type="button"
-						onClick={handleCopy}
+						onClick={() => setExpanded(!expanded)}
 						className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 transition-colors"
 					>
-						{copied ? "Copied!" : "Copy"}
+						{expanded ? "Collapse" : "Expand"}
 					</button>
-					{isLongResult && (
-						<button
-							type="button"
-							onClick={() => setExpanded(!expanded)}
-							className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 transition-colors"
-						>
-							{expanded ? "Collapse" : "Expand"}
-						</button>
-					)}
-				</div>
+				)}
 			</div>
 
 			{/* Result Content */}
@@ -118,7 +102,7 @@ export const ToolResultCard = ({
 					className={`px-3 py-2 overflow-auto ${isError ? "bg-red-50/50 dark:bg-red-900/10" : "bg-white dark:bg-gray-900"}`}
 				>
 					<pre
-						className={`text-xs whitespace-pre-wrap font-mono leading-relaxed ${isError ? "text-red-700 dark:text-red-300" : "text-gray-700 dark:text-gray-300"}`}
+						className={`text-xs whitespace-pre-wrap font-mono leading-relaxed select-text ${isError ? "text-red-700 dark:text-red-300" : "text-gray-700 dark:text-gray-300"}`}
 					>
 						{displayResult}
 					</pre>

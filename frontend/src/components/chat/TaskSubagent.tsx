@@ -146,7 +146,7 @@ const getSubagentStyles = (type: string) => {
 // Markdown renderer for results
 const MarkdownResult = ({ content }: { content: string }) => {
 	return (
-		<div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-semibold prose-headings:text-base prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent prose-code:text-sm">
+		<div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-semibold prose-headings:text-base prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent prose-code:text-sm select-text">
 			<ReactMarkdown
 				components={{
 					code(props) {
@@ -194,8 +194,8 @@ export const TaskSubagent = ({
 	projectPath,
 	toolUseResult,
 }: TaskSubagentProps) => {
-	const [promptExpanded, setPromptExpanded] = useState(true); // Default expanded
-	const [resultExpanded, setResultExpanded] = useState(true); // Default expanded
+	const [promptExpanded, setPromptExpanded] = useState(true);
+	const [resultExpanded, setResultExpanded] = useState(true);
 	const [thinkingExpanded, setThinkingExpanded] = useState(false);
 	const [toolUsesExpanded, setToolUsesExpanded] = useState(false);
 	const [expandedThinkingIndexes, setExpandedThinkingIndexes] = useState<
@@ -204,18 +204,6 @@ export const TaskSubagent = ({
 	const [expandedToolIndexes, setExpandedToolIndexes] = useState<Set<number>>(
 		new Set(),
 	);
-	const [copiedSection, setCopiedSection] = useState<string | null>(null);
-
-	const handleCopySection = async (
-		e: React.MouseEvent,
-		section: string,
-		content: string,
-	) => {
-		e.stopPropagation();
-		await navigator.clipboard.writeText(content);
-		setCopiedSection(section);
-		setTimeout(() => setCopiedSection(null), 2000);
-	};
 
 	const styles = getSubagentStyles(subagentType);
 
@@ -296,7 +284,7 @@ export const TaskSubagent = ({
 			{/* Header */}
 			<div className={`px-4 py-3 ${styles.header}`}>
 				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-3">
+					<div className="flex items-center gap-3 select-text">
 						<span className="text-2xl">{styles.icon}</span>
 						<div>
 							<div className="flex items-center gap-2">
@@ -321,66 +309,46 @@ export const TaskSubagent = ({
 			{/* Agent ID Section */}
 			{(agentId || toolUseResult?.agentId) && (
 				<div className="border-t border-gray-200 dark:border-gray-700 px-4 py-2 bg-gray-50 dark:bg-gray-800/30">
-					<button
-						type="button"
-						onClick={() => {
-							const effectiveAgentId = toolUseResult?.agentId || agentId;
-							if (effectiveAgentId) {
-								console.log("Agent ID clicked:", effectiveAgentId);
-								// TODO: Open detail panel
-							}
-						}}
-						className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors flex items-center gap-2 group"
-					>
+					<div className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-2 select-text">
 						<span>Agent ID:</span>
-						<span className="font-mono font-semibold text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+						<span className="font-mono font-semibold text-gray-700 dark:text-gray-300">
 							{toolUseResult?.agentId || agentId}
 						</span>
-						<span className="text-blue-500 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
-							[Click for details]
-						</span>
-					</button>
+					</div>
 				</div>
 			)}
 
 			{/* Input/Prompt Section */}
 			<div className="border-t-2 border-gray-200 dark:border-gray-700">
-				<button
-					type="button"
-					onClick={() => setPromptExpanded(!promptExpanded)}
-					className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 text-left transition-all flex items-center justify-between"
-				>
-					<div className="flex items-center gap-2">
-						<span className="text-lg">📥</span>
-						<span className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+				<div className="px-4 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 flex items-center justify-between">
+					<div className="flex items-center gap-2 flex-1 min-w-0 select-text">
+						<span className="text-lg flex-shrink-0">📥</span>
+						<span className="text-sm font-semibold text-blue-700 dark:text-blue-300 flex-shrink-0">
 							Input (Prompt to Subagent)
 						</span>
 						<span className="text-xs text-blue-500 dark:text-blue-400">
 							{prompt.length} chars
 						</span>
 					</div>
-					<div className="flex items-center gap-2">
-						<button
-							type="button"
-							onClick={(e) => handleCopySection(e, "prompt", prompt)}
-							className="text-xs px-1.5 py-0.5 rounded bg-blue-200 dark:bg-blue-800 text-blue-700 dark:text-blue-300 hover:bg-blue-300 dark:hover:bg-blue-700 transition-colors"
-						>
-							{copiedSection === "prompt" ? "Copied!" : "Copy"}
-						</button>
+					<button
+						type="button"
+						onClick={() => setPromptExpanded(!promptExpanded)}
+						className="text-xs px-2 py-1 rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors flex-shrink-0 ml-2"
+					>
 						<span
-							className={`text-blue-500 transition-transform duration-200 ${promptExpanded ? "rotate-90" : ""}`}
+							className={`text-blue-500 transition-transform duration-200 inline-block ${promptExpanded ? "rotate-90" : ""}`}
 						>
 							▶
 						</span>
-					</div>
-				</button>
+					</button>
+				</div>
 				<div
 					className={`overflow-hidden transition-all duration-300 ease-in-out ${
 						promptExpanded ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
 					}`}
 				>
 					<div className="px-4 py-3 bg-white dark:bg-gray-900 max-h-[550px] overflow-y-auto border-l-4 border-blue-400 dark:border-blue-600">
-						<pre className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap font-mono leading-relaxed">
+						<pre className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap font-mono leading-relaxed select-text">
 							{prompt}
 						</pre>
 					</div>
@@ -390,14 +358,10 @@ export const TaskSubagent = ({
 			{/* Thinking Blocks Section */}
 			{agentId && projectPath && thinkingBlocks.length > 0 && (
 				<div className="border-t-2 border-gray-200 dark:border-gray-700">
-					<button
-						type="button"
-						onClick={() => setThinkingExpanded(!thinkingExpanded)}
-						className="w-full px-4 py-2.5 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 hover:from-purple-100 hover:to-pink-100 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30 text-left transition-all flex items-center justify-between"
-					>
-						<div className="flex items-center gap-2">
-							<span className="text-lg">💭</span>
-							<span className="text-sm font-semibold text-purple-700 dark:text-purple-300">
+					<div className="px-4 py-2.5 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 flex items-center justify-between">
+						<div className="flex items-center gap-2 flex-1 min-w-0 select-text">
+							<span className="text-lg flex-shrink-0">💭</span>
+							<span className="text-sm font-semibold text-purple-700 dark:text-purple-300 flex-shrink-0">
 								Thinking Blocks
 							</span>
 							<span className="text-xs text-purple-500 dark:text-purple-400">
@@ -405,23 +369,18 @@ export const TaskSubagent = ({
 								{thinkingBlocks.length === 1 ? "block" : "blocks"}
 							</span>
 						</div>
-						<div className="flex items-center gap-2">
-							<button
-								type="button"
-								onClick={(e) =>
-									handleCopySection(e, "thinking", thinkingBlocks.join("\n\n---\n\n"))
-								}
-								className="text-xs px-1.5 py-0.5 rounded bg-purple-200 dark:bg-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-300 dark:hover:bg-purple-700 transition-colors"
-							>
-								{copiedSection === "thinking" ? "Copied!" : "Copy"}
-							</button>
+						<button
+							type="button"
+							onClick={() => setThinkingExpanded(!thinkingExpanded)}
+							className="text-xs px-2 py-1 rounded hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors flex-shrink-0 ml-2"
+						>
 							<span
-								className={`text-purple-500 transition-transform duration-200 ${thinkingExpanded ? "rotate-90" : ""}`}
+								className={`text-purple-500 transition-transform duration-200 inline-block ${thinkingExpanded ? "rotate-90" : ""}`}
 							>
 								▶
 							</span>
-						</div>
-					</button>
+						</button>
+					</div>
 					<div
 						className={`overflow-hidden transition-all duration-300 ease-in-out ${
 							thinkingExpanded
@@ -445,16 +404,12 @@ export const TaskSubagent = ({
 											}`}
 											className="border border-purple-200 dark:border-purple-700 rounded-lg overflow-hidden"
 										>
-											<button
-												type="button"
-												onClick={() => toggleThinking(index)}
-												className="w-full px-3 py-2 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-left flex items-center justify-between"
-											>
-												<div className="flex items-center gap-2 flex-1 min-w-0">
-													<span className="text-purple-600 dark:text-purple-400 text-xs font-mono">
+											<div className="px-3 py-2 bg-purple-50 dark:bg-purple-900/20 flex items-center justify-between">
+												<div className="flex items-center gap-2 flex-1 min-w-0 select-text">
+													<span className="text-purple-600 dark:text-purple-400 text-xs font-mono flex-shrink-0">
 														[💭 #{index + 1}]
 													</span>
-													<span className="text-xs text-purple-500 dark:text-purple-400">
+													<span className="text-xs text-purple-500 dark:text-purple-400 flex-shrink-0">
 														{thinking.length} chars
 													</span>
 													{!isExpanded && (
@@ -463,15 +418,21 @@ export const TaskSubagent = ({
 														</span>
 													)}
 												</div>
-												<span
-													className={`text-purple-500 transition-transform duration-200 ml-2 ${isExpanded ? "rotate-90" : ""}`}
+												<button
+													type="button"
+													onClick={() => toggleThinking(index)}
+													className="text-xs px-2 py-1 rounded hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors flex-shrink-0 ml-2"
 												>
-													▶
-												</span>
-											</button>
+													<span
+														className={`text-purple-500 transition-transform duration-200 inline-block ${isExpanded ? "rotate-90" : ""}`}
+													>
+														▶
+													</span>
+												</button>
+											</div>
 											{isExpanded && (
 												<div className="px-3 py-2 bg-white dark:bg-gray-900">
-													<pre className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap font-mono">
+													<pre className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap font-mono select-text">
 														{thinking}
 													</pre>
 												</div>
@@ -488,43 +449,28 @@ export const TaskSubagent = ({
 			{/* Tool Uses Section */}
 			{agentId && projectPath && toolUses.length > 0 && (
 				<div className="border-t-2 border-gray-200 dark:border-gray-700">
-					<button
-						type="button"
-						onClick={() => setToolUsesExpanded(!toolUsesExpanded)}
-						className="w-full px-4 py-2.5 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 hover:from-orange-100 hover:to-red-100 dark:hover:from-orange-900/30 dark:hover:to-red-900/30 text-left transition-all flex items-center justify-between"
-					>
-						<div className="flex items-center gap-2">
-							<span className="text-lg">🔧</span>
-							<span className="text-sm font-semibold text-orange-700 dark:text-orange-300">
+					<div className="px-4 py-2.5 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 flex items-center justify-between">
+						<div className="flex items-center gap-2 flex-1 min-w-0 select-text">
+							<span className="text-lg flex-shrink-0">🔧</span>
+							<span className="text-sm font-semibold text-orange-700 dark:text-orange-300 flex-shrink-0">
 								Tool Uses
 							</span>
 							<span className="text-xs text-orange-500 dark:text-orange-400">
 								{toolUses.length} {toolUses.length === 1 ? "call" : "calls"}
 							</span>
 						</div>
-						<div className="flex items-center gap-2">
-							<button
-								type="button"
-								onClick={(e) =>
-									handleCopySection(
-										e,
-										"tools",
-										toolUses
-											.map((t) => `${t.name}\n${JSON.stringify(t.input, null, 2)}`)
-											.join("\n\n---\n\n"),
-									)
-								}
-								className="text-xs px-1.5 py-0.5 rounded bg-orange-200 dark:bg-orange-800 text-orange-700 dark:text-orange-300 hover:bg-orange-300 dark:hover:bg-orange-700 transition-colors"
-							>
-								{copiedSection === "tools" ? "Copied!" : "Copy"}
-							</button>
+						<button
+							type="button"
+							onClick={() => setToolUsesExpanded(!toolUsesExpanded)}
+							className="text-xs px-2 py-1 rounded hover:bg-orange-200 dark:hover:bg-orange-800 transition-colors flex-shrink-0 ml-2"
+						>
 							<span
-								className={`text-orange-500 transition-transform duration-200 ${toolUsesExpanded ? "rotate-90" : ""}`}
+								className={`text-orange-500 transition-transform duration-200 inline-block ${toolUsesExpanded ? "rotate-90" : ""}`}
 							>
 								▶
 							</span>
-						</div>
-					</button>
+						</button>
+					</div>
 					<div
 						className={`overflow-hidden transition-all duration-300 ease-in-out ${
 							toolUsesExpanded
@@ -556,13 +502,9 @@ export const TaskSubagent = ({
 											}`}
 											className="border border-orange-200 dark:border-orange-700 rounded-lg overflow-hidden"
 										>
-											<button
-												type="button"
-												onClick={() => toggleToolUse(index)}
-												className="w-full px-3 py-2 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 text-left flex items-center justify-between"
-											>
-												<div className="flex items-center gap-2 flex-1 min-w-0">
-													<span className="text-orange-600 dark:text-orange-400 text-xs">
+											<div className="px-3 py-2 bg-orange-50 dark:bg-orange-900/20 flex items-center justify-between">
+												<div className="flex items-center gap-2 flex-1 min-w-0 select-text">
+													<span className="text-orange-600 dark:text-orange-400 text-xs flex-shrink-0">
 														[{toolIcon} {tool.name}]
 													</span>
 													{inputDisplay && (
@@ -571,15 +513,21 @@ export const TaskSubagent = ({
 														</span>
 													)}
 												</div>
-												<span
-													className={`text-orange-500 transition-transform duration-200 ml-2 ${isExpanded ? "rotate-90" : ""}`}
+												<button
+													type="button"
+													onClick={() => toggleToolUse(index)}
+													className="text-xs px-2 py-1 rounded hover:bg-orange-200 dark:hover:bg-orange-800 transition-colors flex-shrink-0 ml-2"
 												>
-													▶
-												</span>
-											</button>
+													<span
+														className={`text-orange-500 transition-transform duration-200 inline-block ${isExpanded ? "rotate-90" : ""}`}
+													>
+														▶
+													</span>
+												</button>
+											</div>
 											{isExpanded && (
 												<div className="px-3 py-2 bg-white dark:bg-gray-900">
-													<pre className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap font-mono">
+													<pre className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap font-mono select-text">
 														{JSON.stringify(tool.input, null, 2)}
 													</pre>
 												</div>
@@ -596,35 +544,28 @@ export const TaskSubagent = ({
 			{/* Output/Result Section */}
 			{result && (
 				<div className="border-t-2 border-gray-200 dark:border-gray-700">
-					<button
-						type="button"
-						onClick={() => setResultExpanded(!resultExpanded)}
-						className="w-full px-4 py-2.5 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-900/30 dark:hover:to-emerald-900/30 text-left transition-all flex items-center justify-between"
-					>
-						<div className="flex items-center gap-2">
-							<span className="text-lg">📤</span>
-							<span className="text-sm font-semibold text-green-700 dark:text-green-300">
+					<div className="px-4 py-2.5 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 flex items-center justify-between">
+						<div className="flex items-center gap-2 flex-1 min-w-0 select-text">
+							<span className="text-lg flex-shrink-0">📤</span>
+							<span className="text-sm font-semibold text-green-700 dark:text-green-300 flex-shrink-0">
 								Output (Subagent Response)
 							</span>
 							<span className="text-xs text-green-500 dark:text-green-400">
 								{result.length} chars
 							</span>
 						</div>
-						<div className="flex items-center gap-2">
-							<button
-								type="button"
-								onClick={(e) => handleCopySection(e, "result", result)}
-								className="text-xs px-1.5 py-0.5 rounded bg-green-200 dark:bg-green-800 text-green-700 dark:text-green-300 hover:bg-green-300 dark:hover:bg-green-700 transition-colors"
-							>
-								{copiedSection === "result" ? "Copied!" : "Copy"}
-							</button>
+						<button
+							type="button"
+							onClick={() => setResultExpanded(!resultExpanded)}
+							className="text-xs px-2 py-1 rounded hover:bg-green-200 dark:hover:bg-green-800 transition-colors flex-shrink-0 ml-2"
+						>
 							<span
-								className={`text-green-500 transition-transform duration-200 ${resultExpanded ? "rotate-90" : ""}`}
+								className={`text-green-500 transition-transform duration-200 inline-block ${resultExpanded ? "rotate-90" : ""}`}
 							>
 								▶
 							</span>
-						</div>
-					</button>
+						</button>
+					</div>
 					<div
 						className={`overflow-hidden transition-all duration-300 ease-in-out ${
 							resultExpanded ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
@@ -640,7 +581,7 @@ export const TaskSubagent = ({
 			{/* Stats Footer */}
 			{(toolUseResult || (agentId && projectPath && subagentDetail)) && (
 				<div className="border-t-2 border-gray-200 dark:border-gray-700 px-4 py-2.5 bg-gray-50 dark:bg-gray-800/50">
-					<div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
+					<div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400 select-text">
 						{/* Duration - prefer toolUseResult */}
 						{(toolUseResult?.totalDurationMs !== undefined &&
 							toolUseResult.totalDurationMs !== null) ||
