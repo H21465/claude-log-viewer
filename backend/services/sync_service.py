@@ -68,6 +68,7 @@ def sync_project(db: Session, project_id: int) -> dict[str, int]:
 
         # Process messages
         seen_uuids = set()
+        latest_timestamp: datetime | None = None
         for msg in messages:
             # Skip duplicates within this batch
             if msg.uuid in seen_uuids:
@@ -92,6 +93,10 @@ def sync_project(db: Session, project_id: int) -> dict[str, int]:
             except (ValueError, AttributeError):
                 timestamp = datetime.utcnow()
 
+            # Track latest timestamp
+            if latest_timestamp is None or timestamp > latest_timestamp:
+                latest_timestamp = timestamp
+
             # Create new message
             new_message = Message(
                 uuid=msg.uuid,
@@ -109,6 +114,9 @@ def sync_project(db: Session, project_id: int) -> dict[str, int]:
             db.add(new_message)
             stats["added"] += 1
 
+        # Flush to ensure messages are in DB for count query
+        db.flush()
+
         # Update conversation stats
         message_count = (
             db.query(Message)
@@ -118,20 +126,31 @@ def sync_project(db: Session, project_id: int) -> dict[str, int]:
         conversation.message_count = message_count
 
         # Update updated_at to latest message timestamp
-        latest_message = (
-            db.query(Message)
-            .filter(Message.conversation_id == conversation.id)
-            .order_by(Message.timestamp.desc())
-            .first()
-        )
-        if latest_message:
-            conversation.updated_at = latest_message.timestamp
+        if latest_timestamp:
+            conversation.updated_at = latest_timestamp
+        else:
+            # Fallback: query from DB
+            latest_message = (
+                db.query(Message)
+                .filter(Message.conversation_id == conversation.id)
+                .order_by(Message.timestamp.desc())
+                .first()
+            )
+            if latest_message:
+                conversation.updated_at = latest_message.timestamp
 
     # Commit all changes
     db.commit()
 
-    # Update project updated_at
-    project.updated_at = datetime.utcnow()
+    # Update project updated_at to latest conversation update time
+    latest_conversation = (
+        db.query(Conversation)
+        .filter(Conversation.project_id == project_id)
+        .order_by(Conversation.updated_at.desc())
+        .first()
+    )
+    if latest_conversation:
+        project.updated_at = latest_conversation.updated_at
     db.commit()
 
     return stats
