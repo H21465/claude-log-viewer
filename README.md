@@ -89,7 +89,7 @@ claude-log-viewer/
 
 ## 謝辞
 
-このプロジェクトは [ccraw](https://github.com/hiragram/ccraw) を参考にして作成しました。
+このプロジェクトは [ccraw](https://github.com/hiragram/ccraw) 、[Claude-Code-Usage-Monitor](https://github.com/Maciek-roboblog/Claude-Code-Usage-Monitor.git)を参考にして作成しました。
 
 ## License
 
