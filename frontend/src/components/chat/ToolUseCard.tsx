@@ -54,11 +54,20 @@ export const ToolUseCard = ({
 	toolUseId,
 }: ToolUseCardProps) => {
 	const [expanded, setExpanded] = useState(false);
+	const [copied, setCopied] = useState(false);
 	const config = getToolConfig(toolName);
 	const summary = getInputSummary(toolName, toolInput);
 
 	const formatInput = (input: ToolInput): string => {
 		return JSON.stringify(input, null, 2);
+	};
+
+	const handleCopy = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		const text = `${toolName}\n${formatInput(toolInput)}`;
+		await navigator.clipboard.writeText(text);
+		setCopied(true);
+		setTimeout(() => setCopied(false), 2000);
 	};
 
 	return (
@@ -81,11 +90,20 @@ export const ToolUseCard = ({
 							</code>
 						)}
 					</div>
-					<span
-						className={`text-xs text-gray-400 transition-transform duration-200 ${expanded ? "rotate-90" : ""}`}
-					>
-						▶
-					</span>
+					<div className="flex items-center gap-2">
+						<button
+							type="button"
+							onClick={handleCopy}
+							className="text-xs px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+						>
+							{copied ? "Copied!" : "Copy"}
+						</button>
+						<span
+							className={`text-xs text-gray-400 transition-transform duration-200 ${expanded ? "rotate-90" : ""}`}
+						>
+							▶
+						</span>
+					</div>
 				</div>
 			</button>
 

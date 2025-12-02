@@ -10,6 +10,14 @@ export const ThinkingBlock = ({
 	defaultExpanded = false,
 }: ThinkingBlockProps) => {
 	const [expanded, setExpanded] = useState(defaultExpanded);
+	const [copied, setCopied] = useState(false);
+
+	const handleCopy = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		await navigator.clipboard.writeText(thinking);
+		setCopied(true);
+		setTimeout(() => setCopied(false), 2000);
+	};
 
 	// Preview of thinking content
 	const preview = thinking.slice(0, 100).replace(/\n/g, " ");
@@ -30,11 +38,20 @@ export const ThinkingBlock = ({
 						</span>
 					)}
 				</div>
-				<span
-					className={`text-xs transition-transform duration-200 ${expanded ? "rotate-90" : ""}`}
-				>
-					▶
-				</span>
+				<div className="flex items-center gap-2">
+					<button
+						type="button"
+						onClick={handleCopy}
+						className="text-xs px-1.5 py-0.5 rounded bg-violet-200 dark:bg-violet-800 text-violet-700 dark:text-violet-300 hover:bg-violet-300 dark:hover:bg-violet-700 transition-colors"
+					>
+						{copied ? "Copied!" : "Copy"}
+					</button>
+					<span
+						className={`text-xs transition-transform duration-200 ${expanded ? "rotate-90" : ""}`}
+					>
+						▶
+					</span>
+				</div>
 			</button>
 			<div
 				className={`overflow-hidden transition-all duration-300 ease-in-out ${

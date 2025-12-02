@@ -204,6 +204,18 @@ export const TaskSubagent = ({
 	const [expandedToolIndexes, setExpandedToolIndexes] = useState<Set<number>>(
 		new Set(),
 	);
+	const [copiedSection, setCopiedSection] = useState<string | null>(null);
+
+	const handleCopySection = async (
+		e: React.MouseEvent,
+		section: string,
+		content: string,
+	) => {
+		e.stopPropagation();
+		await navigator.clipboard.writeText(content);
+		setCopiedSection(section);
+		setTimeout(() => setCopiedSection(null), 2000);
+	};
 
 	const styles = getSubagentStyles(subagentType);
 
@@ -347,11 +359,20 @@ export const TaskSubagent = ({
 							{prompt.length} chars
 						</span>
 					</div>
-					<span
-						className={`text-blue-500 transition-transform duration-200 ${promptExpanded ? "rotate-90" : ""}`}
-					>
-						▶
-					</span>
+					<div className="flex items-center gap-2">
+						<button
+							type="button"
+							onClick={(e) => handleCopySection(e, "prompt", prompt)}
+							className="text-xs px-1.5 py-0.5 rounded bg-blue-200 dark:bg-blue-800 text-blue-700 dark:text-blue-300 hover:bg-blue-300 dark:hover:bg-blue-700 transition-colors"
+						>
+							{copiedSection === "prompt" ? "Copied!" : "Copy"}
+						</button>
+						<span
+							className={`text-blue-500 transition-transform duration-200 ${promptExpanded ? "rotate-90" : ""}`}
+						>
+							▶
+						</span>
+					</div>
 				</button>
 				<div
 					className={`overflow-hidden transition-all duration-300 ease-in-out ${
@@ -384,11 +405,22 @@ export const TaskSubagent = ({
 								{thinkingBlocks.length === 1 ? "block" : "blocks"}
 							</span>
 						</div>
-						<span
-							className={`text-purple-500 transition-transform duration-200 ${thinkingExpanded ? "rotate-90" : ""}`}
-						>
-							▶
-						</span>
+						<div className="flex items-center gap-2">
+							<button
+								type="button"
+								onClick={(e) =>
+									handleCopySection(e, "thinking", thinkingBlocks.join("\n\n---\n\n"))
+								}
+								className="text-xs px-1.5 py-0.5 rounded bg-purple-200 dark:bg-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-300 dark:hover:bg-purple-700 transition-colors"
+							>
+								{copiedSection === "thinking" ? "Copied!" : "Copy"}
+							</button>
+							<span
+								className={`text-purple-500 transition-transform duration-200 ${thinkingExpanded ? "rotate-90" : ""}`}
+							>
+								▶
+							</span>
+						</div>
 					</button>
 					<div
 						className={`overflow-hidden transition-all duration-300 ease-in-out ${
@@ -470,11 +502,28 @@ export const TaskSubagent = ({
 								{toolUses.length} {toolUses.length === 1 ? "call" : "calls"}
 							</span>
 						</div>
-						<span
-							className={`text-orange-500 transition-transform duration-200 ${toolUsesExpanded ? "rotate-90" : ""}`}
-						>
-							▶
-						</span>
+						<div className="flex items-center gap-2">
+							<button
+								type="button"
+								onClick={(e) =>
+									handleCopySection(
+										e,
+										"tools",
+										toolUses
+											.map((t) => `${t.name}\n${JSON.stringify(t.input, null, 2)}`)
+											.join("\n\n---\n\n"),
+									)
+								}
+								className="text-xs px-1.5 py-0.5 rounded bg-orange-200 dark:bg-orange-800 text-orange-700 dark:text-orange-300 hover:bg-orange-300 dark:hover:bg-orange-700 transition-colors"
+							>
+								{copiedSection === "tools" ? "Copied!" : "Copy"}
+							</button>
+							<span
+								className={`text-orange-500 transition-transform duration-200 ${toolUsesExpanded ? "rotate-90" : ""}`}
+							>
+								▶
+							</span>
+						</div>
 					</button>
 					<div
 						className={`overflow-hidden transition-all duration-300 ease-in-out ${
@@ -561,11 +610,20 @@ export const TaskSubagent = ({
 								{result.length} chars
 							</span>
 						</div>
-						<span
-							className={`text-green-500 transition-transform duration-200 ${resultExpanded ? "rotate-90" : ""}`}
-						>
-							▶
-						</span>
+						<div className="flex items-center gap-2">
+							<button
+								type="button"
+								onClick={(e) => handleCopySection(e, "result", result)}
+								className="text-xs px-1.5 py-0.5 rounded bg-green-200 dark:bg-green-800 text-green-700 dark:text-green-300 hover:bg-green-300 dark:hover:bg-green-700 transition-colors"
+							>
+								{copiedSection === "result" ? "Copied!" : "Copy"}
+							</button>
+							<span
+								className={`text-green-500 transition-transform duration-200 ${resultExpanded ? "rotate-90" : ""}`}
+							>
+								▶
+							</span>
+						</div>
 					</button>
 					<div
 						className={`overflow-hidden transition-all duration-300 ease-in-out ${

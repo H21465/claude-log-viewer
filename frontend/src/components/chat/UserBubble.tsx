@@ -1,20 +1,18 @@
-import { useState } from "react";
 import type { Message } from "../../types";
+import {
+	formatAsJson,
+	formatAsMarkdown,
+	formatTextOnly,
+} from "../../utils/copyFormatters";
 import { formatTimeShort } from "../../utils/formatTime";
+import { CopyDropdown } from "./CopyDropdown";
 
 interface UserBubbleProps {
 	message: Message;
 }
 
 export const UserBubble = ({ message }: UserBubbleProps) => {
-	const [copied, setCopied] = useState(false);
 	const timestamp = formatTimeShort(message.timestamp);
-
-	const handleCopy = async () => {
-		await navigator.clipboard.writeText(message.content);
-		setCopied(true);
-		setTimeout(() => setCopied(false), 2000);
-	};
 
 	return (
 		<div className="flex justify-end mb-3 group">
@@ -27,14 +25,36 @@ export const UserBubble = ({ message }: UserBubbleProps) => {
 					</div>
 					<div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
 						<span>{timestamp}</span>
-						<button
-							type="button"
-							onClick={handleCopy}
-							className="opacity-0 group-hover:opacity-100 hover:text-blue-500 transition-opacity"
-							title="Copy"
-						>
-							{copied ? "Copied" : "Copy"}
-						</button>
+						<CopyDropdown
+							accentColor="blue"
+							options={[
+								{
+									label: "Copy Text",
+									icon: "📋",
+									action: async () => {
+										await navigator.clipboard.writeText(
+											formatTextOnly(message),
+										);
+									},
+								},
+								{
+									label: "Copy as Markdown",
+									icon: "📄",
+									action: async () => {
+										await navigator.clipboard.writeText(
+											formatAsMarkdown(message),
+										);
+									},
+								},
+								{
+									label: "Copy Full",
+									icon: "📦",
+									action: async () => {
+										await navigator.clipboard.writeText(formatAsJson(message));
+									},
+								},
+							]}
+						/>
 					</div>
 				</div>
 				<div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">

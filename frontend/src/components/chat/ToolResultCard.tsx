@@ -12,6 +12,13 @@ export const ToolResultCard = ({
 	isError = false,
 }: ToolResultCardProps) => {
 	const [expanded, setExpanded] = useState(false);
+	const [copied, setCopied] = useState(false);
+
+	const handleCopy = async () => {
+		await navigator.clipboard.writeText(result);
+		setCopied(true);
+		setTimeout(() => setCopied(false), 2000);
+	};
 
 	// Count lines for display
 	const lineCount = result.split("\n").length;
@@ -81,15 +88,24 @@ export const ToolResultCard = ({
 						{lineCount} line{lineCount !== 1 ? "s" : ""}
 					</span>
 				</div>
-				{isLongResult && (
+				<div className="flex items-center gap-2">
 					<button
 						type="button"
-						onClick={() => setExpanded(!expanded)}
+						onClick={handleCopy}
 						className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 transition-colors"
 					>
-						{expanded ? "Collapse" : "Expand"}
+						{copied ? "Copied!" : "Copy"}
 					</button>
-				)}
+					{isLongResult && (
+						<button
+							type="button"
+							onClick={() => setExpanded(!expanded)}
+							className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 transition-colors"
+						>
+							{expanded ? "Collapse" : "Expand"}
+						</button>
+					)}
+				</div>
 			</div>
 
 			{/* Result Content */}
