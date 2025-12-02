@@ -121,26 +121,35 @@ export function EventNode({
 			<div
 				className={`flex-1 min-w-0 rounded-lg border ${colors.bg} ${colors.border}`}
 			>
-				{/* ヘッダー */}
-				<div className={`flex items-center gap-2 px-3 py-2 ${colors.text}`}>
-					<span className="text-base flex-shrink-0">{icon}</span>
-					{label && (
-						<span className="text-xs font-medium uppercase tracking-wide opacity-75 truncate select-text">
-							{label}
-						</span>
-					)}
-					{expandable && onClick && (
-						<button
-							type="button"
-							onClick={onClick}
-							className="ml-auto text-gray-400 flex-shrink-0 px-2 py-1 rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
-						>
+				{/* ヘッダー - クリックで折りたたみ */}
+				{expandable && onClick ? (
+					<button
+						type="button"
+						onClick={onClick}
+						className={`w-full flex items-center gap-2 px-3 py-2 ${colors.text} cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors rounded-t-lg`}
+					>
+						<span className="text-base flex-shrink-0">{icon}</span>
+						{label && (
+							<span className="text-xs font-medium uppercase tracking-wide opacity-75 truncate">
+								{label}
+							</span>
+						)}
+						<span className="ml-auto text-gray-400 flex-shrink-0">
 							{expanded ? "▼" : "▶"}
-						</button>
-					)}
-				</div>
+						</span>
+					</button>
+				) : (
+					<div className={`flex items-center gap-2 px-3 py-2 ${colors.text}`}>
+						<span className="text-base flex-shrink-0">{icon}</span>
+						{label && (
+							<span className="text-xs font-medium uppercase tracking-wide opacity-75 truncate select-text">
+								{label}
+							</span>
+						)}
+					</div>
+				)}
 
-				{/* コンテンツ */}
+				{/* コンテンツ - テキスト選択可能 */}
 				<div className="px-3 pb-3 text-sm text-gray-700 dark:text-gray-300 overflow-hidden break-words select-text">
 					{children}
 				</div>
