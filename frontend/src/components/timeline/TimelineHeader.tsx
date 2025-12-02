@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useAppStore } from "../../store";
 import type { EventType } from "../../types/timeline";
 import { EVENT_TYPE_META } from "../../types/timeline";
 
@@ -24,6 +25,8 @@ export function TimelineHeader({
 	onHiddenTypesChange,
 	lastEventTimestamp,
 }: TimelineHeaderProps) {
+	const { expandThinkingByDefault, toggleExpandThinkingByDefault } =
+		useAppStore();
 	const isActive = useMemo(
 		() => isSessionActive(lastEventTimestamp),
 		[lastEventTimestamp],
@@ -63,6 +66,23 @@ export function TimelineHeader({
 							Active
 						</span>
 					)}
+					<button
+						type="button"
+						onClick={toggleExpandThinkingByDefault}
+						className={`flex items-center gap-1 px-2 py-0.5 text-xs rounded-full transition-colors ${
+							expandThinkingByDefault
+								? "bg-violet-100 dark:bg-violet-900 text-violet-700 dark:text-violet-300"
+								: "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+						}`}
+						title={
+							expandThinkingByDefault
+								? "Thinking: 展開表示"
+								: "Thinking: 折りたたみ表示"
+						}
+					>
+						💭
+						{expandThinkingByDefault ? "展開" : "折りたたみ"}
+					</button>
 				</div>
 				<span className="text-sm text-gray-500">
 					{hiddenTypes.length > 0

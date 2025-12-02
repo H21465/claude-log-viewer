@@ -8,7 +8,8 @@ import { useAppStore } from "./store";
 const queryClient = new QueryClient();
 
 function AppHeader() {
-	const { darkMode, toggleDarkMode } = useAppStore();
+	const { darkMode, toggleDarkMode, headerCollapsed, toggleHeaderCollapsed } =
+		useAppStore();
 
 	return (
 		<header className="h-12 bg-gradient-to-r from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700 flex items-center justify-between px-4 shadow-md">
@@ -20,40 +21,62 @@ function AppHeader() {
 					Claude Log Viewer
 				</h1>
 			</div>
-			<button
-				type="button"
-				onClick={toggleDarkMode}
-				className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
-				title="Toggle dark mode"
-			>
-				{darkMode ? (
+			<div className="flex items-center gap-2">
+				<button
+					type="button"
+					onClick={toggleHeaderCollapsed}
+					className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+					title={headerCollapsed ? "ヘッダーを展開" : "ヘッダーを折りたたむ"}
+				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
-						className="h-4 w-4"
+						className={`h-4 w-4 transition-transform ${headerCollapsed ? "rotate-180" : ""}`}
 						viewBox="0 0 20 20"
 						fill="currentColor"
-						aria-label="Light mode"
 					>
-						<title>Light mode</title>
+						<title>{headerCollapsed ? "展開" : "折りたたむ"}</title>
 						<path
 							fillRule="evenodd"
-							d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+							d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"
 							clipRule="evenodd"
 						/>
 					</svg>
-				) : (
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						className="h-4 w-4"
-						viewBox="0 0 20 20"
-						fill="currentColor"
-						aria-label="Dark mode"
-					>
-						<title>Dark mode</title>
-						<path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-					</svg>
-				)}
-			</button>
+				</button>
+				<button
+					type="button"
+					onClick={toggleDarkMode}
+					className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+					title="Toggle dark mode"
+				>
+					{darkMode ? (
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							className="h-4 w-4"
+							viewBox="0 0 20 20"
+							fill="currentColor"
+							aria-label="Light mode"
+						>
+							<title>Light mode</title>
+							<path
+								fillRule="evenodd"
+								d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+								clipRule="evenodd"
+							/>
+						</svg>
+					) : (
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							className="h-4 w-4"
+							viewBox="0 0 20 20"
+							fill="currentColor"
+							aria-label="Dark mode"
+						>
+							<title>Dark mode</title>
+							<path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+						</svg>
+					)}
+				</button>
+			</div>
 		</header>
 	);
 }
@@ -150,15 +173,21 @@ function OverlayPanel() {
 }
 
 function AppContent() {
-	const { darkMode, selectedConversationId } = useAppStore();
+	const { darkMode, selectedConversationId, headerCollapsed } = useAppStore();
 
 	return (
 		<div className={darkMode ? "dark" : ""}>
 			<div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 				<AppHeader />
-				<NavigationBar />
-				<div className="flex-1 flex flex-col min-h-0 relative">
+				<div
+					className={`overflow-hidden transition-all duration-200 ${
+						headerCollapsed ? "max-h-0" : "max-h-32"
+					}`}
+				>
+					<NavigationBar />
 					<SearchBar />
+				</div>
+				<div className="flex-1 flex flex-col min-h-0 relative">
 					<EventTimeline conversationId={selectedConversationId} />
 					<OverlayPanel />
 				</div>

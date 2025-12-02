@@ -92,7 +92,7 @@ const shortenModelName = (model: string | null): string => {
 
 export const AssistantBubble = ({ message }: AssistantBubbleProps) => {
 	const [copied, setCopied] = useState(false);
-	const { selectedProject } = useAppStore();
+	const { selectedProject, expandThinkingByDefault } = useAppStore();
 	const timestamp = formatTimeShort(message.timestamp);
 
 	const handleCopy = async () => {
@@ -217,7 +217,11 @@ export const AssistantBubble = ({ message }: AssistantBubbleProps) => {
 
 									if (block.type === "thinking" && block.thinking) {
 										return (
-											<ThinkingBlock key={key} thinking={block.thinking} />
+											<ThinkingBlock
+												key={key}
+												thinking={block.thinking}
+												defaultExpanded={expandThinkingByDefault}
+											/>
 										);
 									}
 									if (block.type === "text" && block.text) {

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAppStore } from "../../store";
 import type { ContentBlock, SubagentMessage } from "../../types";
 import { formatTime } from "../../utils/formatTime";
 
@@ -22,7 +23,8 @@ interface MessageBlockProps {
 }
 
 const ThinkingMessage = ({ block, timestamp }: MessageBlockProps) => {
-	const [expanded, setExpanded] = useState(false);
+	const { expandThinkingByDefault } = useAppStore();
+	const [expanded, setExpanded] = useState(expandThinkingByDefault);
 	const preview = (block.thinking || "").slice(0, 60).replace(/\n/g, " ");
 
 	return (

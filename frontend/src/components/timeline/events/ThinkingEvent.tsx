@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAppStore } from "../../../store";
 import type { TimelineEvent } from "../../../types/timeline";
 import { EVENT_TYPE_META } from "../../../types/timeline";
 import { EventNode } from "../EventNode";
@@ -8,7 +9,8 @@ interface ThinkingEventProps {
 }
 
 export function ThinkingEvent({ event }: ThinkingEventProps) {
-	const [expanded, setExpanded] = useState(false);
+	const { expandThinkingByDefault } = useAppStore();
+	const [expanded, setExpanded] = useState(expandThinkingByDefault);
 	const meta = EVENT_TYPE_META.THINKING;
 
 	const content = event.content || "";
