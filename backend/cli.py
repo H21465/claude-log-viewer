@@ -26,6 +26,7 @@ from rich.table import Table
 from rich.text import Text
 
 from services.server_manager import ServerManager
+from services.timezone_utils import format_local_time
 from services.usage.models import UsageEntry
 from services.usage.reader import UsageReader
 
@@ -196,7 +197,7 @@ class ClaudeLogViewerCLI:
         table.add_column("Status", justify="center", width=8)
 
         for entry in reversed(list(self.status_entries)):
-            time_str = entry.timestamp.strftime("%H:%M:%S")
+            time_str = format_local_time(entry.timestamp)
             model_name = self._shorten_model_name(entry.model)
             status_style = "green" if entry.status == "OK" else "red"
 
