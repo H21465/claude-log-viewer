@@ -1,4 +1,4 @@
-.PHONY: start stop help setup status
+.PHONY: start stop help setup status cli
 
 # ヘルプ
 help:
@@ -8,6 +8,7 @@ help:
 	@echo "  make stop   - Stop the app"
 	@echo "  make status - Show running status"
 	@echo "  make setup  - Install all dependencies"
+	@echo "  make cli    - Start the Rich-based terminal dashboard"
 	@echo "  make help   - Show this help"
 
 # 依存関係のインストール
@@ -60,3 +61,7 @@ status:
 	else \
 		echo "Frontend: Stopped"; \
 	fi
+
+# Rich CLIダッシュボード
+cli:
+	@cd backend && uv run python cli.py

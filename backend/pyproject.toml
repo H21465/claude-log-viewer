@@ -11,4 +11,8 @@ dependencies = [
     "watchdog>=4.0.0",
     "websockets>=12.0",
     "numpy>=1.24.0",
+    "rich>=13.0.0",
 ]
+
+[project.scripts]
+claude-log-viewer = "cli:main"
