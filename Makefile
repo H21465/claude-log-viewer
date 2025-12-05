@@ -1,18 +1,8 @@
-.PHONY: start stop help setup status cli
 
-# ヘルプ
-help:
-	@echo "Claude Log Viewer"
-	@echo ""
-	@echo "  make start  - Start the app (auto-installs dependencies if needed)"
-	@echo "  make stop   - Stop the app"
-	@echo "  make status - Show running status"
-	@echo "  make setup  - Install all dependencies"
-	@echo "  make cli    - Start the Rich-based terminal dashboard"
-	@echo "  make help   - Show this help"
+.DEFAULT_GOAL := help
 
-# 依存関係のインストール
-setup:
+.PHONY: setup
+setup: ## Install all dependencies
 	@echo "Setting up dependencies..."
 	@if [ ! -d frontend/node_modules ]; then \
 		echo "Installing npm packages..."; \
@@ -20,8 +10,8 @@ setup:
 	fi
 	@echo "Setup complete."
 
-# 起動
-start: setup
+.PHONY: start
+start: setup ## Start the app (auto-installs dependencies if needed)
 	@echo "Starting Claude Log Viewer..."
 	@cd backend && uv run uvicorn main:app --host 0.0.0.0 --port 8000 & echo $$! > ../.backend.pid
 	@cd frontend && npm run dev & echo $$! > ../.frontend.pid
@@ -31,8 +21,8 @@ start: setup
 	@echo ""
 	@echo "Stop with: make stop"
 
-# 終了
-stop:
+.PHONY: stop
+stop: ## Stop the app
 	@if [ -f .backend.pid ]; then \
 		kill $$(cat .backend.pid) 2>/dev/null || true; \
 		rm -f .backend.pid; \
@@ -45,8 +35,8 @@ stop:
 	@pkill -f "vite" 2>/dev/null || true
 	@echo "Stopped."
 
-# ステータス確認
-status:
+.PHONY: status
+status: ## Show running status
 	@echo "Claude Log Viewer Status"
 	@echo "========================"
 	@backend_running=$$(pgrep -f "uvicorn main:app" 2>/dev/null); \
@@ -62,6 +52,13 @@ status:
 		echo "Frontend: Stopped"; \
 	fi
 
-# Rich CLIダッシュボード
-cli: setup
+.PHONY: cli
+cli: setup ## Start the Rich-based terminal dashboard
 	@cd backend && uv run python cli.py
+
+.PHONY: help
+help: ## Show this help message
+	@echo ""
+	@echo "target list:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
+		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
