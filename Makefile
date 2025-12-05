@@ -63,5 +63,5 @@ status:
 	fi
 
 # Rich CLIダッシュボード
-cli:
+cli: setup
 	@cd backend && uv run python cli.py
