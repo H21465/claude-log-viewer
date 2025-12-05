@@ -13,14 +13,6 @@ Claude Codeとの会話履歴をプロジェクト単位で閲覧・検索でき
 - **ローカル完結**: 外部サービスへのアップロード不要、安全に管理
 - **コードハイライト**: シンタックスハイライト付きでコードブロックを表示
 
-## スクリーンショット
-
-### 会話タイムライン
-プロジェクトごとの会話履歴を時系列で表示。
-
-### Usage Dashboard
-トークン使用量、コスト、5時間ウィンドウの残り時間を一目で確認。
-
 ## 必要環境
 
 - Python 3.11+
@@ -40,33 +32,20 @@ make setup
 
 ## 使い方
 
-### 起動
-
 ```bash
-make start
+make cli
 ```
 
-起動後、以下のURLにアクセス:
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:8000
+CLIダッシュボードが起動し、トークン使用量をリアルタイムで確認できます。
 
-### 停止
+### キーボードショートカット
 
-```bash
-make stop
-```
-
-### ステータス確認
-
-```bash
-make status
-```
-
-### コマンド一覧
-
-```bash
-make help
-```
+| キー | 動作 |
+|------|------|
+| **s** | Webサーバー起動 → http://localhost:5173 で会話履歴を閲覧 |
+| **x** | Webサーバー停止 |
+| **r** | Webサーバー再起動 |
+| **q** | 終了 |
 
 ## 機能詳細
 
@@ -112,26 +91,45 @@ make help
 
 ```
 claude-log-viewer/
-├── backend/              # FastAPI バックエンド
-│   ├── main.py           # エントリーポイント
-│   ├── models.py         # SQLAlchemyモデル
-│   ├── schemas.py        # Pydanticスキーマ
-│   ├── routers/          # APIルーター
-│   │   ├── projects.py   # プロジェクトAPI
-│   │   ├── conversations.py  # 会話API
-│   │   └── usage.py      # 使用量API
-│   └── services/         # ビジネスロジック
-│       ├── parser/       # JONSLパーサー
-│       └── usage/        # 使用量集計
-├── frontend/             # React フロントエンド
+├── backend/                    # Python バックエンド
+│   ├── cli.py                  # CLIダッシュボード（メイン）
+│   ├── main.py                 # FastAPI エントリーポイント
+│   ├── database.py             # DB接続
+│   ├── models.py               # SQLAlchemyモデル
+│   ├── schemas.py              # Pydanticスキーマ
+│   ├── routers/                # APIルーター
+│   │   ├── projects.py         # プロジェクトAPI
+│   │   ├── conversations.py    # 会話API
+│   │   ├── messages.py         # メッセージAPI
+│   │   ├── usage.py            # 使用量API
+│   │   ├── search.py           # 検索API
+│   │   ├── subagents.py        # サブエージェントAPI
+│   │   ├── sync.py             # 同期API
+│   │   └── websocket.py        # WebSocket
+│   └── services/               # ビジネスロジック
+│       ├── log_parser.py       # JONSLパーサー
+│       ├── subagent_parser.py  # サブエージェントパーサー
+│       ├── sync_service.py     # ログ同期
+│       ├── server_manager.py   # サーバー管理
+│       ├── file_watcher.py     # ファイル監視
+│       ├── websocket_manager.py
+│       └── usage/              # 使用量集計
+│           ├── reader.py       # ログ読み込み
+│           ├── aggregator.py   # 集計処理
+│           ├── pricing.py      # 料金計算
+│           └── ...
+├── frontend/                   # React フロントエンド
 │   └── src/
-│       ├── api/          # APIクライアント
-│       ├── components/   # UIコンポーネント
-│       │   ├── usage/    # Usage Dashboardコンポーネント
-│       │   └── ...
-│       ├── hooks/        # カスタムフック
-│       └── types/        # TypeScript型定義
-└── Makefile              # 起動・停止コマンド
+│       ├── api/                # APIクライアント
+│       ├── components/
+│       │   ├── chat/           # チャット表示
+│       │   ├── timeline/       # タイムライン表示
+│       │   └── usage/          # Usage Dashboard
+│       ├── hooks/              # カスタムフック
+│       ├── store/              # Zustand状態管理
+│       ├── types/              # TypeScript型定義
+│       └── utils/              # ユーティリティ
+└── Makefile
 ```
 
 ## API エンドポイント
