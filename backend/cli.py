@@ -120,7 +120,8 @@ class ClaudeLogViewerCLI:
     """Rich-based CLI for Claude Log Viewer."""
 
     def __init__(self) -> None:
-        self.console = Console()
+        # Use standard color system to follow terminal's theme settings
+        self.console = Console(color_system="standard")
         self.status_entries: deque[StatusEntry] = deque(maxlen=MAX_STATUS_ENTRIES)
         self.running = True
         self.last_seen_timestamp: datetime | None = None
