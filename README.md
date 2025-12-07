@@ -47,6 +47,17 @@ CLIダッシュボードが起動し、トークン使用量をリアルタイ�
 | **r** | Webサーバー再起動 |
 | **q** | 終了 |
 
+## ポート設定
+
+デフォルトのポートが使用中の場合、自動的に次の空きポートを使用します。
+
+| サーバー | フォールバックポート |
+|---------|---------------------|
+| Backend | 8000 → 8001 → 8002 → 8003 → 8004 |
+| Frontend | 5173 → 5174 → 5175 → ... (Vite自動) |
+
+バックエンドが使用するポートは `.backend_port` ファイルに記録され、フロントエンドのプロキシ設定に自動反映されます。
+
 ## 機能詳細
 
 ### Usage Dashboard
@@ -111,6 +122,7 @@ claude-log-viewer/
 │       ├── subagent_parser.py  # サブエージェントパーサー
 │       ├── sync_service.py     # ログ同期
 │       ├── server_manager.py   # サーバー管理
+│       ├── port_utils.py       # ポート自動選択
 │       ├── file_watcher.py     # ファイル監視
 │       ├── websocket_manager.py
 │       └── usage/              # 使用量集計
@@ -149,7 +161,7 @@ claude-log-viewer/
 - `GET /api/usage/reset-time` - 5時間ウィンドウのリセット時間
 
 ### WebSocket
-- `ws://localhost:8000/ws/{project_id}` - リアルタイム更新
+- `ws://localhost:{backend_port}/ws/{project_id}` - リアルタイム更新
 
 ## 謝辞
 

@@ -25,16 +25,26 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from services.port_utils import BACKEND_PORTS, FRONTEND_PORTS, read_port_file
 from services.server_manager import ServerManager
 from services.timezone_utils import format_local_time
 from services.usage.models import UsageEntry
 from services.usage.reader import UsageReader
 
 # Constants
-FRONTEND_URL = "http://localhost:5173"
-BACKEND_URL = "http://localhost:8000"
 MAX_STATUS_ENTRIES = 10
 REFRESH_INTERVAL = 0.5  # seconds
+
+
+def get_frontend_url() -> str:
+    """Get the default frontend URL."""
+    return f"http://localhost:{FRONTEND_PORTS[0]}"
+
+
+def get_backend_url() -> str:
+    """Get the backend URL from port file or default."""
+    port = read_port_file() or BACKEND_PORTS[0]
+    return f"http://localhost:{port}"
 
 
 class StatusEntry:
@@ -142,16 +152,18 @@ class ClaudeLogViewerCLI:
     def _create_url_panel(self) -> Panel:
         """Create the URL display panel with server status."""
         status = self.server_manager.get_status()
+        frontend_url = get_frontend_url()
+        backend_url = self.server_manager.get_backend_url()
 
         url_text = Text()
         url_text.append("Frontend: ", style="bold cyan")
-        url_text.append(f"{FRONTEND_URL} ", style="underline blue link")
+        url_text.append(f"{frontend_url} ", style="underline blue link")
         url_text.append("[")
         url_text.append_text(self._get_server_status_indicator(status["frontend"]))
         url_text.append("]\n")
 
         url_text.append("Backend:  ", style="bold cyan")
-        url_text.append(f"{BACKEND_URL} ", style="underline blue link")
+        url_text.append(f"{backend_url} ", style="underline blue link")
         url_text.append("[")
         url_text.append_text(self._get_server_status_indicator(status["backend"]))
         url_text.append("]")

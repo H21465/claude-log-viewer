@@ -21,6 +21,13 @@ from routers.websocket import (
 )
 from services.file_watcher import file_watcher
 from services.log_parser import list_all_projects
+from services.port_utils import (
+    BACKEND_PORTS,
+    FRONTEND_PORTS,
+    cleanup_port_file,
+    get_backend_port,
+    write_port_file,
+)
 from services.sync_service import sync_project
 from services.usage import UsageReader
 
@@ -210,10 +217,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS middleware configuration
+# CORS middleware configuration - allow all frontend fallback ports
+_cors_origins = [f"http://localhost:{port}" for port in FRONTEND_PORTS]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5174"],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -237,7 +245,20 @@ app.include_router(usage.router)
 app.include_router(websocket_router)
 
 
-if __name__ == "__main__":
+def run_server() -> None:
+    """Run the server with automatic port selection."""
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)  # noqa: S104
+    port = get_backend_port()
+    write_port_file(port)
+    print(f"Starting backend server on port {port}")
+    print(f"Available backend ports: {BACKEND_PORTS}")
+
+    try:
+        uvicorn.run(app, host="0.0.0.0", port=port)  # noqa: S104
+    finally:
+        cleanup_port_file()
+
+
+if __name__ == "__main__":
+    run_server()

@@ -9,10 +9,17 @@ import time
 from pathlib import Path
 from typing import Self
 
+from services.port_utils import (
+    BACKEND_PORTS,
+    cleanup_port_file,
+    get_backend_port,
+    read_port_file,
+    write_port_file,
+)
+
 logger = logging.getLogger(__name__)
 
-# Default commands
-DEFAULT_BACKEND_CMD = "uv run uvicorn main:app --host 0.0.0.0 --port 8000"
+# Default commands (port will be dynamically set)
 DEFAULT_FRONTEND_CMD = "npm run dev"
 
 # Paths
@@ -33,7 +40,6 @@ class ServerManager:
 
     def __init__(
         self,
-        backend_cmd: str | None = None,
         frontend_cmd: str | None = None,
         backend_dir: Path | None = None,
         frontend_dir: Path | None = None,
@@ -41,28 +47,25 @@ class ServerManager:
         """Initialize the server manager.
 
         Args:
-            backend_cmd: Command to start backend server
             frontend_cmd: Command to start frontend server
             backend_dir: Working directory for backend
             frontend_dir: Working directory for frontend
 
         Raises:
-            ValueError: If backend_cmd or frontend_cmd is empty string
+            ValueError: If frontend_cmd is empty string
 
         """
         # Validate commands
-        if backend_cmd == "":
-            raise ValueError("backend_cmd cannot be empty")
         if frontend_cmd == "":
             raise ValueError("frontend_cmd cannot be empty")
 
-        self._backend_cmd = backend_cmd or DEFAULT_BACKEND_CMD
         self._frontend_cmd = frontend_cmd or DEFAULT_FRONTEND_CMD
         self._backend_dir = backend_dir or BACKEND_DIR
         self._frontend_dir = frontend_dir or FRONTEND_DIR
 
         self.backend_process: subprocess.Popen | None = None
         self.frontend_process: subprocess.Popen | None = None
+        self._backend_port: int | None = None
 
     def __enter__(self) -> Self:
         """Enter context manager."""
@@ -73,7 +76,7 @@ class ServerManager:
         self.stop_all()
 
     def start_backend(self) -> bool:
-        """Start the backend server.
+        """Start the backend server with automatic port selection.
 
         Returns:
             True if server started successfully or already running
@@ -84,9 +87,16 @@ class ServerManager:
             return True
 
         try:
-            logger.info(f"Starting backend: {self._backend_cmd}")
+            # Find available port
+            self._backend_port = get_backend_port()
+            write_port_file(self._backend_port)
+
+            backend_cmd = (
+                f"uv run uvicorn main:app --host 0.0.0.0 --port {self._backend_port}"
+            )
+            logger.info(f"Starting backend: {backend_cmd}")
             self.backend_process = subprocess.Popen(
-                self._backend_cmd,
+                backend_cmd,
                 shell=True,
                 cwd=self._backend_dir,
                 stdout=subprocess.PIPE,
@@ -97,12 +107,19 @@ class ServerManager:
             if self.backend_process.poll() is not None:
                 logger.error("Backend failed to start")
                 self.backend_process = None
+                self._backend_port = None
+                cleanup_port_file()
                 return False
-            logger.info(f"Backend started with PID {self.backend_process.pid}")
+            logger.info(
+                f"Backend started on port {self._backend_port} "
+                f"with PID {self.backend_process.pid}"
+            )
             return True
-        except (OSError, FileNotFoundError) as e:
+        except (OSError, FileNotFoundError, RuntimeError) as e:
             logger.error(f"Failed to start backend: {e}")
             self.backend_process = None
+            self._backend_port = None
+            cleanup_port_file()
             return False
 
     def stop_backend(self, force: bool = False) -> bool:
@@ -116,10 +133,13 @@ class ServerManager:
 
         """
         if self.backend_process is None:
+            cleanup_port_file()
             return True
 
         if not self.is_backend_running():
             self.backend_process = None
+            self._backend_port = None
+            cleanup_port_file()
             return True
 
         try:
@@ -139,6 +159,8 @@ class ServerManager:
 
             logger.info("Backend stopped")
             self.backend_process = None
+            self._backend_port = None
+            cleanup_port_file()
             return True
         except Exception as e:
             logger.error(f"Error stopping backend: {e}")
@@ -276,14 +298,25 @@ class ServerManager:
             return False
         return self.frontend_process.poll() is None
 
-    def get_status(self) -> dict[str, bool]:
+    def get_status(self) -> dict[str, bool | int | None]:
         """Get status of both servers.
 
         Returns:
-            Dictionary with 'backend' and 'frontend' boolean status
+            Dictionary with 'backend', 'frontend' boolean status and 'backend_port'
 
         """
         return {
             "backend": self.is_backend_running(),
             "frontend": self.is_frontend_running(),
+            "backend_port": self._backend_port or read_port_file(),
         }
+
+    def get_backend_url(self) -> str:
+        """Get the backend URL with current port.
+
+        Returns:
+            Backend URL string
+
+        """
+        port = self._backend_port or read_port_file() or BACKEND_PORTS[0]
+        return f"http://localhost:{port}"

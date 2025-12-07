@@ -1,0 +1,7 @@
+# Runtime files
+.backend_port
+.backend.pid
+.frontend.pid
+
+# Task status (development)
+.task_status.md

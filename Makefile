@@ -13,10 +13,15 @@ setup: ## Install all dependencies
 .PHONY: start
 start: setup ## Start the app (auto-installs dependencies if needed)
 	@echo "Starting Claude Log Viewer..."
-	@cd backend && uv run uvicorn main:app --host 0.0.0.0 --port 8000 & echo $$! > ../.backend.pid
+	@cd backend && uv run python -c "from main import run_server; run_server()" & echo $$! > ../.backend.pid
+	@sleep 1
 	@cd frontend && npm run dev & echo $$! > ../.frontend.pid
 	@echo ""
-	@echo "Backend:  http://localhost:8000"
+	@if [ -f .backend_port ]; then \
+		echo "Backend:  http://localhost:$$(cat .backend_port)"; \
+	else \
+		echo "Backend:  http://localhost:8000"; \
+	fi
 	@echo "Frontend: http://localhost:5173"
 	@echo ""
 	@echo "Stop with: make stop"
@@ -33,6 +38,7 @@ stop: ## Stop the app
 	fi
 	@pkill -f "uvicorn main:app" 2>/dev/null || true
 	@pkill -f "vite" 2>/dev/null || true
+	@rm -f .backend_port
 	@echo "Stopped."
 
 .PHONY: status
@@ -41,7 +47,11 @@ status: ## Show running status
 	@echo "========================"
 	@backend_running=$$(pgrep -f "uvicorn main:app" 2>/dev/null); \
 	if [ -n "$$backend_running" ]; then \
-		echo "Backend:  Running (PID: $$backend_running) - http://localhost:8000"; \
+		if [ -f .backend_port ]; then \
+			echo "Backend:  Running (PID: $$backend_running) - http://localhost:$$(cat .backend_port)"; \
+		else \
+			echo "Backend:  Running (PID: $$backend_running) - http://localhost:8000"; \
+		fi; \
 	else \
 		echo "Backend:  Stopped"; \
 	fi
